@@ -41,16 +41,57 @@ class TmdbService
 
   # Movie Details
   def movie_details(id, language: "tr-TR")
-    fetch_with_cache("movie/#{id}", { append_to_response: "credits,recommendations,videos", language: language }) do
+    movie = fetch_with_cache("movie/#{id}", { language: language }) do
       fallback_movie_details(id)
     end
+
+    return movie if movie.blank? || movie["id"].blank?
+
+    # Fetch credits separately without triggering TMDB's tr-TR append_to_response encoding bug
+    unless movie.key?("credits")
+      credits = fetch_with_cache("movie/#{id}/credits", { language: language })
+      movie["credits"] = credits if credits.is_a?(Hash) && credits["cast"].present?
+    end
+
+    # Fetch recommendations separately
+    unless movie.key?("recommendations")
+      recommendations = fetch_with_cache("movie/#{id}/recommendations", { language: language })
+      movie["recommendations"] = recommendations if recommendations.is_a?(Hash) && recommendations["results"].present?
+    end
+
+    # Fetch videos separately
+    unless movie.key?("videos")
+      videos = fetch_with_cache("movie/#{id}/videos", { language: language })
+      movie["videos"] = videos if videos.is_a?(Hash) && videos["results"].present?
+    end
+
+    movie
   end
 
   # TV Details
   def tv_details(id, language: "tr-TR")
-    fetch_with_cache("tv/#{id}", { append_to_response: "credits,recommendations,videos", language: language }) do
+    show = fetch_with_cache("tv/#{id}", { language: language }) do
       fallback_tv_details(id)
     end
+
+    return show if show.blank? || show["id"].blank?
+
+    unless show.key?("credits")
+      credits = fetch_with_cache("tv/#{id}/credits", { language: language })
+      show["credits"] = credits if credits.is_a?(Hash) && credits["cast"].present?
+    end
+
+    unless show.key?("recommendations")
+      recommendations = fetch_with_cache("tv/#{id}/recommendations", { language: language })
+      show["recommendations"] = recommendations if recommendations.is_a?(Hash) && recommendations["results"].present?
+    end
+
+    unless show.key?("videos")
+      videos = fetch_with_cache("tv/#{id}/videos", { language: language })
+      show["videos"] = videos if videos.is_a?(Hash) && videos["results"].present?
+    end
+
+    show
   end
 
   # Movie Genres List
@@ -232,7 +273,9 @@ class TmdbService
   end
 
   def fallback_movie_details(id)
-    movie = fallback_popular_movies["results"].find { |m| m["id"].to_i == id.to_i } || fallback_popular_movies["results"].first
+    movie = fallback_popular_movies["results"].find { |m| m["id"].to_i == id.to_i }
+    return nil unless movie
+
     movie.merge({
       "runtime" => 169,
       "genres" => [{ "id" => 878, "name" => "Bilimkurgu" }, { "id" => 18, "name" => "Dram" }],
@@ -250,7 +293,9 @@ class TmdbService
   end
 
   def fallback_tv_details(id)
-    show = fallback_popular_tv["results"].find { |t| t["id"].to_i == id.to_i } || fallback_popular_tv["results"].first
+    show = fallback_popular_tv["results"].find { |t| t["id"].to_i == id.to_i }
+    return nil unless show
+
     show.merge({
       "number_of_seasons" => 2,
       "number_of_episodes" => 18,

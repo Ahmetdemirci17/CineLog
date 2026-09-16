@@ -31,6 +31,11 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     get movie_path(157336)
     assert_response :success
 
+    get movie_path(496243)
+    assert_response :success
+    assert_includes response.body, "Parazit"
+    refute_includes response.body, "Yıldızlararası"
+
     get tv_show_path(95557)
     assert_response :success
 

@@ -38,7 +38,7 @@ class MoviesController < ApplicationController
         {
           id: genre[:id],
           name: genre[:name],
-          items: (res["results"] || []).first(10)
+          items: (res["results"] || []).first(15)
         }
       end
     else
