@@ -101,9 +101,18 @@ class TmdbService
     end
   end
 
-  # Discover Movies by Genre ID (Top rated / most liked films)
-  def discover_by_genre(genre_id, page: 1, language: "tr-TR")
-    fetch_with_cache("discover/movie", { with_genres: genre_id, sort_by: "vote_average.desc", "vote_count.gte" => 250, page: page, language: language }) do
+  # Discover Movies by Genre ID
+  def discover_by_genre(genre_id, page: 1, sort_by: "popularity.desc", language: "tr-TR")
+    params = {
+      with_genres: genre_id,
+      sort_by: sort_by,
+      page: page,
+      language: language
+    }
+    # When sorting strictly by vote_average, require at least 100 votes to avoid 1-vote 10/10 entries
+    params["vote_count.gte"] = 100 if sort_by.to_s.include?("vote_average")
+
+    fetch_with_cache("discover/movie", params) do
       fallback_discover_by_genre(genre_id)
     end
   end

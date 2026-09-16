@@ -54,6 +54,10 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Bilimkurgu"
 
+    get genre_path(878, page: 2, sort_by: "popularity.desc")
+    assert_response :success
+    assert_includes response.body, "Sayfa"
+
     get community_posts_path
     assert_response :success
 
