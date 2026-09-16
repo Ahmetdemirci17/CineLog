@@ -1,0 +1,151 @@
+<div class="space-y-12">
+  <!-- Hero Section -->
+  <% if @hero_item.present? %>
+    <%
+      hero_id = @hero_item["id"]
+      hero_type = @hero_item["media_type"].presence || (@hero_item["title"].present? ? "movie" : "tv")
+      hero_title = @hero_item["title"] || @hero_item["name"]
+      hero_backdrop = @hero_item["backdrop_path"]
+      hero_rating = @hero_item["vote_average"] ? @hero_item["vote_average"].round(1) : nil
+      hero_url = hero_type == "tv" ? tv_show_path(hero_id) : movie_path(hero_id)
+      hero_watchlist = @user_watchlist_map[[hero_id, hero_type]]
+    %>
+    <div class="relative w-full h-[480px] lg:h-[540px] rounded-3xl overflow-hidden mb-12 border border-purple-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.7)] bg-[#121217]">
+      <!-- Backdrop Image with Double Gradients -->
+      <div class="absolute inset-0 w-full h-full">
+        <% if hero_backdrop.present? %>
+          <img src="<%= TmdbService.backdrop_url(hero_backdrop) %>" alt="<%= hero_title %>" class="w-full h-full object-cover object-center">
+        <% else %>
+          <div class="w-full h-full bg-[#15161c]"></div>
+        <% end %>
+        <!-- Double Gradient Overlays: Bottom-to-top and Left-to-right -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/60 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-[#0a0a0c]/80 to-transparent"></div>
+      </div>
+
+      <!-- Hero Content -->
+      <div class="relative h-full flex flex-col justify-end p-6 sm:p-10 lg:p-12 max-w-3xl z-10">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="border border-purple-500/30 bg-purple-500/10 text-purple-400 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+            Günün Öne Çıkanı • <%= hero_type == 'tv' ? 'Dizi' : 'Film' %>
+          </span>
+          <% if hero_rating.present? %>
+            <span class="px-3 py-1 text-xs font-bold rounded-full bg-black/60 backdrop-blur-md text-amber-400 border border-amber-400/30 flex items-center gap-1 shadow-sm">
+              <span>★</span>
+              <span><%= hero_rating %></span>
+            </span>
+          <% end %>
+        </div>
+
+        <h1 class="text-4xl lg:text-6xl font-black text-white tracking-tight leading-none">
+          <%= hero_title %>
+        </h1>
+
+        <p class="max-w-2xl text-sm lg:text-base text-zinc-300 line-clamp-3 leading-relaxed mt-4">
+          <%= @hero_item["overview"] %>
+        </p>
+
+        <!-- Action Group -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <%= link_to hero_url, class: "bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2 text-sm" do %>
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+            </svg>
+            <span>Detayları Gör</span>
+          <% end %>
+
+          <div>
+            <%= render "watchlists/action_button", tmdb_id: hero_id, media_type: hero_type, title: hero_title, poster_path: @hero_item["poster_path"], watchlist_item: hero_watchlist, hero: true %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Catalog Section with Tabs -->
+  <div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-b border-[#1f202a] pb-4">
+      <div>
+        <h2 class="text-lg sm:text-xl font-bold text-[#f1f3f7] tracking-tight flex items-center gap-2">
+          <span class="w-2 h-5 rounded bg-[#7c3aed]"></span>
+          Keşfet & İzle
+        </h2>
+        <p class="text-xs text-[#8b90a0] mt-0.5">Kütüphanedeki en güncel film ve diziler.</p>
+      </div>
+
+      <!-- Matte Tabs (Scrollable on mobile) -->
+      <div class="overflow-x-auto scrollbar-none pb-1 sm:pb-0 -mx-1 px-1">
+        <div class="inline-flex p-1 rounded-xl bg-[#15161c] border border-[#262833] whitespace-nowrap">
+          <%= link_to root_path(tab: "popular"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'popular' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+            <span>Popüler Filmler</span>
+          <% end %>
+
+          <%= link_to root_path(tab: "trending"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'trending' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+            <span>Trendler</span>
+          <% end %>
+
+          <%= link_to root_path(tab: "tv"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+            <span>Diziler</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <% if @items.empty? %>
+      <div class="text-center py-16 bg-[#15161c] rounded-2xl border border-[#262833]">
+        <p class="text-[#8b90a0]">İçerik yüklenemedi. Lütfen internet bağlantınızı veya TMDB API anahtarınızı kontrol edin.</p>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <% @items.each do |item| %>
+          <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Category Carousels (Horizontal Scrolling) -->
+  <% if @genre_sections.present? && @genre_sections.any? %>
+    <div class="space-y-8 sm:space-y-10 pt-2 sm:pt-4">
+      <div class="border-b border-[#1f202a] pb-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-[#f1f3f7] tracking-tight flex items-center gap-2">
+            <span class="w-2 h-5 rounded bg-[#7c3aed]"></span>
+            Katalogdan En Beğenilenler
+          </h2>
+          <p class="text-xs text-[#8b90a0] mt-0.5">Türlere göre izleyicilerden en yüksek puanı almış seçkin yapımlar.</p>
+        </div>
+        <%= link_to "Tüm Katalog →", genres_path, class: "text-xs font-semibold text-[#a78bfa] hover:text-white transition px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#15161c] border border-[#262833] hover:border-[#a78bfa]/40 shrink-0" %>
+      </div>
+
+      <% @genre_sections.each do |section| %>
+        <% next if section[:items].empty? %>
+        <div class="space-y-3 sm:space-y-4">
+          <!-- Section Header -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/20">#</span>
+              <h3 class="text-base sm:text-lg font-bold text-[#f1f3f7] tracking-tight"><%= section[:name] %></h3>
+            </div>
+            <%= link_to genre_path(section[:id]), class: "text-xs font-semibold text-[#a78bfa] hover:text-white flex items-center gap-1 transition group" do %>
+              <span>Tümünü Gör</span>
+              <span class="group-hover:translate-x-0.5 transition duration-150">→</span>
+            <% end %>
+          </div>
+
+          <!-- Horizontal Scrolling Rail -->
+          <div class="relative -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div class="flex gap-3 sm:gap-5 overflow-x-auto pb-3 sm:pb-4 pt-1 scroll-smooth snap-x snap-mandatory" style="scrollbar-width: thin; scrollbar-color: #272236 transparent;">
+              <% section[:items].each do |item| %>
+                <div class="w-36 sm:w-48 lg:w-52 shrink-0 snap-start">
+                  <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

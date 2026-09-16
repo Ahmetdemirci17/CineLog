@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pitch-950: #0d0e12;
+  --color-pitch-black: #08090b;
+  --color-surface-card: #15161c;
+  --color-surface-elevated: #1c1d25;
+  --color-surface-hover: #232530;
+
+  --color-amethyst-primary: #6d28d9;
+  --color-amethyst-neon: #7c3aed;
+  --color-amethyst-glow: #9d8ec2;
+
+  --color-border-dark: #262833;
+  --color-border-amethyst: rgba(157, 142, 194, 0.12);
+
+  --color-text-bright: #f1f3f7;
+  --color-text-muted: #8b90a0;
+}
+
+@layer utilities {
+  .matte-shadow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .matte-shadow-lg {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  }
+  .matte-border {
+    border: 1px solid #262833;
+  }
+  .matte-border-subtle {
+    border: 1px solid rgba(157, 142, 194, 0.15);
+  }
+  .ambient-glow {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(147, 51, 234, 0.14) 0%, rgba(0, 0, 0, 0) 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0c;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9333ea;
+}

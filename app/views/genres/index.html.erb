@@ -1,0 +1,22 @@
+<div class="space-y-6 sm:space-y-8">
+  <div class="border-b border-[#1f202a] pb-4 sm:pb-6">
+    <h1 class="text-2xl sm:text-3xl font-black text-[#f1f3f7] tracking-tight">
+      Film ve Dizi <span class="text-[#a78bfa]">Kataloğu</span>
+    </h1>
+    <p class="text-xs sm:text-sm text-[#8b90a0] mt-1">Türlere göre izleyicilerden en yüksek puanları almış yapımları keşfedin.</p>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+    <% @genres.each do |genre| %>
+      <%= link_to genre_path(genre["id"]), class: "group p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-[#15161c] border border-[#262833] hover:border-[#a78bfa]/40 hover:bg-[#1c1d25] transition duration-200 flex flex-col justify-between h-28 sm:h-32 shadow-sm" do %>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#272236] border border-[#a78bfa]/25 flex items-center justify-center text-xs font-bold text-[#a78bfa] group-hover:bg-[#6d28d9] group-hover:text-white transition">
+          #
+        </div>
+        <div>
+          <h3 class="text-xs sm:text-sm font-bold text-[#f1f3f7] group-hover:text-[#a78bfa] transition"><%= genre["name"] %></h3>
+          <span class="text-[10px] sm:text-[11px] text-[#8b90a0]">En İyileri İncele →</span>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

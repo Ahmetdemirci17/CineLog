@@ -1,0 +1,48 @@
+<div class="max-w-2xl mx-auto space-y-8">
+  <div class="border-b border-[#1f202a] pb-4">
+    <%= link_to "← Topluluğa Dön", community_posts_path, class: "text-xs font-semibold text-[#a78bfa] hover:text-[#f1f3f7] transition inline-flex items-center gap-1 mb-2" %>
+    <h1 class="text-3xl font-black text-[#f1f3f7] tracking-tight">Yeni Konu Aç</h1>
+    <p class="text-xs sm:text-sm text-[#8b90a0] mt-1">Öneri isteyin, inceleme paylaşın veya film teorilerini tartışın.</p>
+  </div>
+
+  <div class="bg-[#15161c] p-6 sm:p-8 rounded-2xl border border-[#262833] shadow-md">
+    <%= form_with model: @post, class: "space-y-5" do |f| %>
+      <% if @post.errors.any? %>
+        <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+          <ul class="list-disc pl-4 space-y-1">
+            <% @post.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @post.tmdb_id.present? %>
+        <div class="p-3 rounded-xl bg-[#1c1d25] border border-[#262833] flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-[#a78bfa] font-bold">İlişkili Yapım:</span>
+            <span class="text-[#f1f3f7] font-semibold"><%= @movie_title.presence || "TMDB ##{@post.tmdb_id}" %></span>
+            <span class="px-2 py-0.5 rounded bg-[#0d0e12] text-[#a78bfa] uppercase text-[10px] border border-[#262833]"><%= @post.media_type %></span>
+          </div>
+          <%= f.hidden_field :tmdb_id %>
+          <%= f.hidden_field :media_type %>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :title, "Konu Başlığı", class: "block text-xs font-semibold uppercase tracking-wider text-[#8b90a0] mb-1.5" %>
+        <%= f.text_field :title, autofocus: true, placeholder: "Örn: Interstellar benzeri zihin yakan film önerisi?", required: true, class: "w-full px-4 py-2.5 bg-[#1c1d25] border border-[#262833] rounded-xl text-[#f1f3f7] placeholder-[#686d80] focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] text-xs sm:text-sm transition" %>
+      </div>
+
+      <div>
+        <%= f.label :content, "Detaylı Açıklama", class: "block text-xs font-semibold uppercase tracking-wider text-[#8b90a0] mb-1.5" %>
+        <%= f.text_area :content, rows: 5, placeholder: "Neler arıyorsunuz? Beğendiğiniz benzer yapımlar hangileri?", required: true, class: "w-full p-3.5 bg-[#1c1d25] border border-[#262833] rounded-xl text-[#f1f3f7] placeholder-[#686d80] focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] text-xs sm:text-sm transition" %>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#1f202a]">
+        <%= link_to "İptal", community_posts_path, class: "px-3.5 py-2 text-xs font-medium text-[#8b90a0] hover:text-white transition" %>
+        <%= f.submit "Konuyu Paylaş", class: "px-5 py-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold text-xs rounded-xl shadow-sm transition duration-150 cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>

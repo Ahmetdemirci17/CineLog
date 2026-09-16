@@ -1,0 +1,50 @@
+<div class="min-h-[70vh] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-6 bg-[#15161c] p-7 sm:p-9 rounded-2xl border border-[#262833] shadow-md">
+    <div class="text-center">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#221e30] border border-[#a78bfa]/25 text-[#a78bfa] mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-black text-[#f1f3f7] tracking-tight">CineLog'a Giriş Yap</h2>
+      <p class="mt-1.5 text-xs text-[#8b90a0]">İzleme listenize ve topluluğa erişmek için giriş yapın.</p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-6 space-y-4" }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div>
+        <%= f.label :email, "E-posta", class: "block text-xs font-semibold uppercase tracking-wider text-[#8b90a0] mb-1.5" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "eposta@example.com", class: "w-full px-3.5 py-2.5 bg-[#1c1d25] border border-[#262833] rounded-xl text-[#f1f3f7] placeholder-[#686d80] focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] text-xs sm:text-sm transition" %>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <%= f.label :password, "Şifre", class: "block text-xs font-semibold uppercase tracking-wider text-[#8b90a0]" %>
+          <% if devise_mapping.recoverable? %>
+            <%= link_to "Şifremi unuttum", new_password_path(resource_name), class: "text-xs text-[#a78bfa] hover:underline" %>
+          <% end %>
+        </div>
+        <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••", class: "w-full px-3.5 py-2.5 bg-[#1c1d25] border border-[#262833] rounded-xl text-[#f1f3f7] placeholder-[#686d80] focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] text-xs sm:text-sm transition" %>
+      </div>
+
+      <% if devise_mapping.rememberable? %>
+        <div class="flex items-center">
+          <%= f.check_box :remember_me, class: "h-4 w-4 rounded border-[#262833] bg-[#1c1d25] text-[#6d28d9] focus:ring-0" %>
+          <%= f.label :remember_me, "Beni hatırla", class: "ml-2 block text-xs text-[#8b90a0]" %>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.submit "Giriş Yap", class: "w-full py-2.5 px-4 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold rounded-xl text-xs sm:text-sm shadow-sm transition duration-150 cursor-pointer" %>
+      </div>
+    <% end %>
+
+    <div class="text-center pt-1">
+      <p class="text-xs text-[#8b90a0]">
+        Hesabınız yok mu?
+        <%= link_to "Kayıt Ol", new_registration_path(resource_name), class: "font-semibold text-[#a78bfa] hover:underline" %>
+      </p>
+    </div>
+  </div>
+</div>

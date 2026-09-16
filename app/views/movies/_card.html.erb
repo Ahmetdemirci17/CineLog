@@ -1,0 +1,64 @@
+<%# locals: (item:, watchlist_map: {}) %>
+<%
+  item_id = item["id"]
+  media_type = item["media_type"].presence || (item["title"].present? ? "movie" : "tv")
+  title = item["title"] || item["name"]
+  release_date = item["release_date"] || item["first_air_date"]
+  year = release_date.present? ? release_date.split("-").first : nil
+  rating = item["vote_average"] ? item["vote_average"].round(1) : nil
+  poster_path = item["poster_path"]
+  show_url = media_type == "tv" ? tv_show_path(item_id) : movie_path(item_id)
+  watchlist_item = watchlist_map[[item_id, media_type]]
+%>
+
+<div class="group relative bg-[#15161c] rounded-2xl border border-[#262833] overflow-hidden hover:border-[#a78bfa]/35 hover:shadow-[0_8px_25px_rgba(0,0,0,0.45)] transition duration-200 flex flex-col justify-between">
+  <!-- Poster Image & Badges -->
+  <div class="relative aspect-[2/3] w-full overflow-hidden bg-[#1c1d25]">
+    <%= link_to show_url, class: "block w-full h-full" do %>
+      <% if poster_path.present? %>
+        <img src="<%= TmdbService.poster_url(poster_path) %>" alt="<%= title %>" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+      <% else %>
+        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#1c1d25] text-[#686d80]">
+          <svg class="w-10 h-10 mb-2 opacity-40 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+          </svg>
+          <span class="text-xs">Afiş Yok</span>
+        </div>
+      <% end %>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#15161c] via-transparent to-black/25"></div>
+    <% end %>
+
+    <!-- Top Badges -->
+    <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+      <span class="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-md bg-[#0d0e12]/85 text-[#a78bfa] border border-[#262833]">
+        <%= media_type == 'tv' ? 'Dizi' : 'Film' %>
+      </span>
+
+      <% if rating.present? && rating > 0 %>
+        <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#0d0e12]/85 text-amber-400 border border-[#262833] flex items-center gap-1 shadow-sm">
+          <span>★</span>
+          <span><%= rating %></span>
+        </span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Card Info & Interactive Hotwire Action -->
+  <div class="p-2.5 sm:p-3.5 flex flex-col justify-between flex-1 gap-2 sm:gap-3">
+    <div>
+      <h3 class="text-xs sm:text-sm font-bold text-[#f1f3f7] line-clamp-1 group-hover:text-[#a78bfa] transition">
+        <%= link_to title, show_url %>
+      </h3>
+      <div class="flex items-center gap-2 mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-[#8b90a0]">
+        <% if year.present? %>
+          <span><%= year %></span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Watchlist Action Button -->
+    <div class="pt-2 border-t border-[#1f202a] flex items-center justify-between w-full">
+      <%= render "watchlists/action_button", tmdb_id: item_id, media_type: media_type, title: title, poster_path: poster_path, watchlist_item: watchlist_item, compact: true %>
+    </div>
+  </div>
+</div>

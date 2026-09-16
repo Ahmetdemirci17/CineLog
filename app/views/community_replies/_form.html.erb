@@ -1,0 +1,24 @@
+<div id="new_reply_form">
+  <% if user_signed_in? %>
+    <%= form_with model: [community_post, reply], class: "space-y-3" do |f| %>
+      <div id="reply_errors"></div>
+      <div class="flex items-start gap-3">
+        <div class="w-7 h-7 rounded-lg bg-[#272236] border border-[#a78bfa]/25 flex items-center justify-center text-xs font-bold text-[#a78bfa] shrink-0 mt-1">
+          <%= current_user.username[0].upcase %>
+        </div>
+        <div class="flex-1 space-y-2">
+          <%= f.text_area :content, rows: 2, placeholder: "Fikrini veya önerini paylaş...", required: true, class: "w-full p-3 bg-[#1c1d25] border border-[#262833] focus:border-[#7c3aed] rounded-xl text-[#f1f3f7] placeholder-[#686d80] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#7c3aed] transition" %>
+          <div class="flex justify-end">
+            <%= f.submit "Yanıtla", class: "px-3.5 py-1.5 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold text-xs rounded-xl transition duration-150 cursor-pointer shadow-sm" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="p-3.5 rounded-xl bg-[#1c1d25] border border-[#262833] text-center">
+      <p class="text-xs text-[#8b90a0]">
+        Tartışmaya katılmak için <%= link_to "giriş yapın", new_user_session_path, class: "text-[#a78bfa] font-semibold hover:underline" %> veya <%= link_to "kayıt olun", new_user_registration_path, class: "text-[#a78bfa] font-semibold hover:underline" %>.
+      </p>
+    </div>
+  <% end %>
+</div>

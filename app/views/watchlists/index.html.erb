@@ -1,0 +1,189 @@
+<div class="space-y-8">
+  <!-- Header Title & User Summary -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-zinc-800/80 pb-6">
+    <div>
+      <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight">
+        İzleme <span class="text-purple-400">Listem</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-zinc-400 mt-1">Kaydettiğiniz filmler, diziler ve izleme geçmişiniz.</p>
+    </div>
+
+    <!-- Segmented Pill Bar Navigation -->
+    <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner">
+      <%= link_to watchlists_path(tab: "plan_to_watch"), class: "px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>İzleyeceklerim</span>
+        <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'plan_to_watch' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
+          <%= @plan_to_watch_items.count %>
+        </span>
+      <% end %>
+
+      <%= link_to watchlists_path(tab: "watched"), class: "px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>İzlediklerim</span>
+        <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'watched' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
+          <%= @watched_items.count %>
+        </span>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @active_tab == "watched" %>
+    <% if @watched_items.empty? %>
+      <div class="text-center py-20 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+        <div class="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+          🎬
+        </div>
+        <h3 class="text-lg font-bold text-white">Henüz izlediğiniz film veya dizi yok</h3>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto mt-2 leading-relaxed">
+          Katalogdan beğendiğiniz yapımları "İzledim" olarak işaretleyip puanlayarak izleme geçmişinizi oluşturabilirsiniz.
+        </p>
+        <div class="mt-6">
+          <%= link_to "Kataloğu Keşfet", root_path, class: "px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/25 transition duration-200 inline-block" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6" id="watched_items_container">
+        <% @watched_items.each do |item| %>
+          <% media_url = item.media_type == 'tv' ? tv_show_path(item.tmdb_id) : movie_path(item.tmdb_id) %>
+          <div id="watchlist_card_<%= item.id %>" class="group relative bg-[#121217] rounded-2xl border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)] transition-all duration-300 flex flex-col">
+            <!-- Poster Area with Aspect 2/3 -->
+            <div class="relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+              <% if item.poster_path.present? %>
+                <img src="<%= TmdbService.poster_url(item.poster_path) %>" alt="<%= item.title %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
+              <% else %>
+                <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 text-xs gap-2">
+                  <span class="text-2xl">🎬</span>
+                  <span>Afiş Yok</span>
+                </div>
+              <% end %>
+
+              <!-- Badges Overlay -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg bg-black/60 backdrop-blur-md text-purple-300 border border-purple-500/30 shadow">
+                  <%= item.media_type == 'tv' ? 'Dizi' : 'Film' %>
+                </span>
+              </div>
+
+              <% if item.user_rating.present? %>
+                <div class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-amber-400/30 flex items-center gap-1 text-amber-400 text-xs font-bold shadow z-10">
+                  <span>★</span>
+                  <span><%= item.user_rating %></span>
+                </div>
+              <% end %>
+
+              <!-- Hover Delete Action -->
+              <div class="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 <%= 'mt-7' if item.user_rating.present? %>">
+                <%= button_to watchlist_path(item), method: :delete, class: "p-1.5 rounded-lg bg-black/80 hover:bg-red-500/80 text-zinc-300 hover:text-white border border-zinc-700/60 hover:border-red-500/50 transition cursor-pointer shadow-lg", title: "Listeden Kaldır" do %>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                <% end %>
+              </div>
+
+              <!-- Bottom Dark Gradient with Info -->
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/85 to-transparent p-3 sm:p-3.5 pt-12 flex flex-col justify-end">
+                <h3 class="text-xs sm:text-sm font-bold text-white group-hover:text-purple-300 transition-colors line-clamp-1">
+                  <%= link_to item.title, media_url %>
+                </h3>
+                <div class="flex items-center justify-between text-[11px] text-emerald-400 font-medium mt-1">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-3 h-3 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span><%= item.watched_at ? item.watched_at.strftime("%d.%m.%Y") : "İzlendi" %></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar: Quick Rating -->
+            <div class="p-2.5 bg-[#121217] border-t border-zinc-800/80">
+              <%= form_with model: item, method: :patch, class: "flex items-center gap-1.5 w-full" do |f| %>
+                <%= f.select :user_rating, (1..10).map { |r| ["★ #{r}", r] }, { selected: item.user_rating, include_blank: "Puan Değiştir" }, class: "text-xs bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-zinc-200 focus:outline-none focus:border-purple-500 w-full transition cursor-pointer", onchange: "this.form.requestSubmit()" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <% if @plan_to_watch_items.empty? %>
+      <div class="text-center py-20 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+        <div class="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+          📌
+        </div>
+        <h3 class="text-lg font-bold text-white">İzleme listeniz şu an boş</h3>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto mt-2 leading-relaxed">
+          İzlemek istediğiniz film ve dizileri listenize ekleyerek ne zaman isterseniz takip edebilirsiniz.
+        </p>
+        <div class="mt-6">
+          <%= link_to "Kataloğa Göz At", root_path, class: "px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/25 transition duration-200 inline-block" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6" id="plan_to_watch_container">
+        <% @plan_to_watch_items.each do |item| %>
+          <% media_url = item.media_type == 'tv' ? tv_show_path(item.tmdb_id) : movie_path(item.tmdb_id) %>
+          <div id="watchlist_card_<%= item.id %>" class="group relative bg-[#121217] rounded-2xl border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)] transition-all duration-300 flex flex-col">
+            <!-- Poster Area with Aspect 2/3 -->
+            <div class="relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+              <% if item.poster_path.present? %>
+                <img src="<%= TmdbService.poster_url(item.poster_path) %>" alt="<%= item.title %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
+              <% else %>
+                <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 text-xs gap-2">
+                  <span class="text-2xl">🎬</span>
+                  <span>Afiş Yok</span>
+                </div>
+              <% end %>
+
+              <!-- Badges Overlay -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg bg-black/60 backdrop-blur-md text-purple-300 border border-purple-500/30 shadow">
+                  <%= item.media_type == 'tv' ? 'Dizi' : 'Film' %>
+                </span>
+              </div>
+
+              <!-- Hover Delete Action -->
+              <div class="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+                <%= button_to watchlist_path(item), method: :delete, class: "p-1.5 rounded-lg bg-black/80 hover:bg-red-500/80 text-zinc-300 hover:text-white border border-zinc-700/60 hover:border-red-500/50 transition cursor-pointer shadow-lg", title: "Listeden Kaldır" do %>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                <% end %>
+              </div>
+
+              <!-- Bottom Dark Gradient with Info -->
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/85 to-transparent p-3 sm:p-3.5 pt-12 flex flex-col justify-end">
+                <h3 class="text-xs sm:text-sm font-bold text-white group-hover:text-purple-300 transition-colors line-clamp-1">
+                  <%= link_to item.title, media_url %>
+                </h3>
+                <div class="flex items-center justify-between text-[11px] text-zinc-400 font-medium mt-1">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-3 h-3 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span><%= item.created_at.strftime("%d.%m.%Y") %></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar: Mark as Watched & Rate -->
+            <div class="p-2.5 bg-[#121217] border-t border-zinc-800/80">
+              <%= form_with model: item, method: :patch, class: "flex items-center gap-1.5 w-full" do |f| %>
+                <%= f.hidden_field :status, value: "watched" %>
+                <%= f.select :user_rating, (1..10).map { |r| ["★ #{r}", r] }, { include_blank: "Puan" }, class: "w-20 text-xs bg-zinc-900 border border-zinc-800 rounded-xl px-2 py-1.5 text-zinc-200 focus:outline-none focus:border-purple-500 transition cursor-pointer" %>
+                <%= f.submit "İzledim ✓", class: "flex-1 py-1.5 text-xs font-semibold rounded-xl bg-purple-600 hover:bg-purple-500 text-white cursor-pointer transition shadow-md shadow-purple-600/20 text-center" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,15 @@
+<%= turbo_stream.replace "watchlist_action_#{@watchlist.tmdb_id}_#{@watchlist.media_type}" do %>
+  <%= render "watchlists/action_button", tmdb_id: @watchlist.tmdb_id, media_type: @watchlist.media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: @watchlist %>
+<% end %>
+
+<%= turbo_stream.remove "watchlist_card_#{@watchlist.id}" %>
+
+<%= turbo_stream.prepend "flash-messages" do %>
+  <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#121217] border border-[rgba(168,85,247,0.3)] text-white shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+    <div class="flex items-center gap-3">
+      <span class="w-6 h-6 rounded-full bg-[#9333ea]/30 text-[#c084fc] flex items-center justify-center font-bold text-xs">✓</span>
+      <p class="text-xs sm:text-sm font-medium text-[#f8fafc]"><%= @watchlist.title %> durumu güncellendi (<%= @watchlist.status == 'watched' ? 'İzlendi' : 'İzlenecek' %>)!</p>
+    </div>
+    <button onclick="this.parentElement.remove()" class="text-[#94a3b8] hover:text-white text-xs ml-3 p-1 cursor-pointer">✕</button>
+  </div>
+<% end %>
