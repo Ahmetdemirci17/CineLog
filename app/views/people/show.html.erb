@@ -1,0 +1,135 @@
+<%
+  name = @person["name"]
+  profile_path = @person["profile_path"]
+  biography = @person["biography"]
+  birthday = @person["birthday"]
+  deathday = @person["deathday"]
+  place_of_birth = @person["place_of_birth"]
+  known_for = @person["known_for_department"] || "Oyunculuk"
+
+  # Department translation
+  dept_tr = case known_for
+            when "Acting" then "Oyuncu"
+            when "Directing" then "Yönetmen"
+            when "Writing" then "Senarist"
+            when "Production" then "Yapımcı"
+            else known_for
+            end
+
+  # Age calculation if birthday is available
+  age = nil
+  if birthday.present?
+    b_date = Date.parse(birthday) rescue nil
+    if b_date
+      end_date = deathday.present? ? (Date.parse(deathday) rescue Date.current) : Date.current
+      age = end_date.year - b_date.year - ((end_date.month > b_date.month || (end_date.month == b_date.month && end_date.day >= b_date.day)) ? 0 : 1)
+    end
+  end
+%>
+
+<div class="space-y-8 sm:space-y-12">
+  <!-- Actor Profile Header Card -->
+  <div class="relative rounded-3xl overflow-hidden bg-[#121217] border border-zinc-800/80 p-6 sm:p-8 lg:p-10 shadow-2xl">
+    <div class="flex flex-col md:flex-row gap-6 sm:gap-8 lg:gap-10 items-start">
+      
+      <!-- Portrait Image -->
+      <div class="w-36 sm:w-48 lg:w-56 shrink-0 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 aspect-[2/3] self-center md:self-start">
+        <% if profile_path.present? %>
+          <img src="<%= TmdbService.poster_url(profile_path, size: "h632") %>" alt="<%= name %>" class="w-full h-full object-cover">
+        <% else %>
+          <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 text-xs gap-2">
+            <span class="text-3xl">👤</span>
+            <span>Fotoğraf Yok</span>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Details & Bio -->
+      <div class="flex-1 space-y-4 w-full">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/25">
+            <%= dept_tr %>
+          </span>
+          <% if birthday.present? %>
+            <span class="px-2.5 py-1 text-xs font-medium rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+              🎂 <%= birthday.split("-").reverse.join(".") %> <%= "(#{age} yaşında)" if age %>
+            </span>
+          <% end %>
+          <% if place_of_birth.present? %>
+            <span class="px-2.5 py-1 text-xs font-medium rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+              📍 <%= place_of_birth %>
+            </span>
+          <% end %>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-900 border border-zinc-800 text-purple-400">
+            🎬 <%= @all_items.size %> Yapım
+          </span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          <%= name %>
+        </h1>
+
+        <!-- Biography -->
+        <div class="pt-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-purple-400 mb-1.5">Biyografi</h3>
+          <% if biography.present? %>
+            <div class="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-4xl space-y-2">
+              <p class="line-clamp-6 hover:line-clamp-none transition-all duration-300">
+                <%= biography %>
+              </p>
+            </div>
+          <% else %>
+            <p class="text-xs text-zinc-500 italic">Bu oyuncu için henüz biyografi bilgisi eklenmemiş.</p>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Filmography Section -->
+  <div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800/80 pb-4">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+          <span class="w-2.5 h-6 rounded-full bg-purple-500"></span>
+          <span>Filmografi & Rol Aldığı Yapımlar</span>
+        </h2>
+        <p class="text-xs text-zinc-400 mt-1">Popülerliğe ve izleyici beğenisine göre sıralanmıştır.</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="inline-flex p-1 rounded-2xl bg-[#121217] border border-zinc-800/80 self-start sm:self-auto shadow-inner">
+        <%= link_to person_path(@person_id, filter: "all"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+          <span>Tümü</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'all' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @all_items.size %></span>
+        <% end %>
+
+        <%= link_to person_path(@person_id, filter: "movie"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'movie' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+          <span>Filmler</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'movie' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @movie_items.size %></span>
+        <% end %>
+
+        <% if @tv_items.any? %>
+          <%= link_to person_path(@person_id, filter: "tv"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'tv' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+            <span>Diziler</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'tv' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @tv_items.size %></span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Works Grid -->
+    <% if @items.empty? %>
+      <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+        <p class="text-sm font-semibold text-zinc-400">Bu kategoride yapım bulunamadı.</p>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <% @items.each do |item| %>
+          <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get "search", to: "movies#search", as: :search
   get "search/suggestions", to: "movies#suggestions", as: :search_suggestions
   resources :genres, only: [:index, :show], path: "katalog"
+  resources :people, only: [:show], path: "oyuncu"
 
   resources :watchlists, only: [:index, :create, :update, :destroy]
 

@@ -117,6 +117,32 @@ class TmdbService
     end
   end
 
+  # Person (Actor / Director) Details
+  def person_details(id, language: "tr-TR")
+    person = fetch_with_cache("person/#{id}", { language: language }) do
+      fallback_person_details(id)
+    end
+
+    return person if person.blank? || person["id"].blank?
+
+    # Fallback to English biography if Turkish biography is empty
+    if person["biography"].blank?
+      en_person = fetch_with_cache("person/#{id}", { language: "en-US" })
+      if en_person.is_a?(Hash) && en_person["biography"].present?
+        person["biography"] = en_person["biography"]
+      end
+    end
+
+    person
+  end
+
+  # Person Combined Credits (Movies & TV Shows)
+  def person_credits(id, language: "tr-TR")
+    fetch_with_cache("person/#{id}/combined_credits", { language: language }) do
+      fallback_person_credits(id)
+    end
+  end
+
   # Image URL Helpers
   def self.poster_url(path, size: "w500")
     return nil if path.blank?
@@ -342,6 +368,24 @@ class TmdbService
     {
       "page" => 1,
       "results" => all_items.sort_by { |m| -m["vote_average"].to_f }
+    }
+  end
+
+  def fallback_person_details(id)
+    {
+      "id" => id,
+      "name" => "Oyuncu Bilgisi",
+      "biography" => "Oyuncu biyografisi şu anda yüklenemedi.",
+      "birthday" => nil,
+      "place_of_birth" => nil,
+      "profile_path" => nil,
+      "known_for_department" => "Acting"
+    }
+  end
+
+  def fallback_person_credits(id)
+    {
+      "cast" => fallback_popular_movies["results"]
     }
   end
 end

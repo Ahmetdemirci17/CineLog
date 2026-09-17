@@ -64,10 +64,17 @@ class MoviesController < ApplicationController
     @query = params[:query].to_s.strip
     if @query.present?
       response = TmdbService.new.search_multi(query: @query, page: params[:page] || 1)
-      @results = (response["results"] || []).select do |item|
-        %w[movie tv].include?(item["media_type"]) || (item["title"].present? || item["name"].present?)
+      all_results = response["results"] || []
+
+      # Separate people and movies/series
+      @people_results = all_results.select { |item| item["media_type"] == "person" }
+      @media_results = all_results.select do |item|
+        %w[movie tv].include?(item["media_type"]) || (item["media_type"] != "person" && (item["title"].present? || item["name"].present?))
       end
+      @results = @media_results
     else
+      @people_results = []
+      @media_results = []
       @results = []
     end
 
@@ -83,8 +90,8 @@ class MoviesController < ApplicationController
     if @query.length >= 2
       response = TmdbService.new.search_multi(query: @query, page: 1)
       @results = (response["results"] || []).select do |item|
-        %w[movie tv].include?(item["media_type"]) || (item["title"].present? || item["name"].present?)
-      end.first(5)
+        %w[movie tv person].include?(item["media_type"]) || (item["title"].present? || item["name"].present?)
+      end.first(6)
     else
       @results = []
     end

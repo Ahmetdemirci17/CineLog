@@ -107,19 +107,19 @@
       </h2>
       <div class="flex gap-3 overflow-x-auto pb-3 -mx-3 px-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 scroll-smooth snap-x">
         <% cast.first(12).each do |actor| %>
-          <div class="w-40 sm:w-auto shrink-0 snap-start bg-[#15161c] p-2.5 rounded-xl border border-[#262833] flex items-center gap-2.5">
+          <%= link_to person_path(actor["id"]), class: "w-40 sm:w-auto shrink-0 snap-start bg-[#15161c] hover:bg-[#1f2029] p-2.5 rounded-xl border border-[#262833] hover:border-purple-500/40 flex items-center gap-2.5 transition duration-150 group cursor-pointer shadow-sm" do %>
             <% if actor["profile_path"].present? %>
-              <img src="<%= TmdbService.poster_url(actor["profile_path"], size: "w185") %>" alt="<%= actor["name"] %>" class="w-10 h-10 rounded-full object-cover shrink-0 border border-[#262833]">
+              <img src="<%= TmdbService.poster_url(actor["profile_path"], size: "w185") %>" alt="<%= actor["name"] %>" class="w-10 h-10 rounded-full object-cover shrink-0 border border-[#262833] group-hover:border-purple-500/40 transition">
             <% else %>
-              <div class="w-10 h-10 rounded-full bg-[#1c1d25] text-[#a78bfa] flex items-center justify-center text-xs font-bold shrink-0">
+              <div class="w-10 h-10 rounded-full bg-[#1c1d25] text-purple-400 flex items-center justify-center text-xs font-bold shrink-0 border border-[#262833]">
                 <%= actor["name"][0] %>
               </div>
             <% end %>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-[#f1f3f7] truncate"><%= actor["name"] %></p>
-              <p class="text-[10px] text-[#8b90a0] truncate"><%= actor["character"] %></p>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-white group-hover:text-purple-300 truncate transition"><%= actor["name"] %></p>
+              <p class="text-[10px] text-zinc-400 truncate"><%= actor["character"] %></p>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
     </div>

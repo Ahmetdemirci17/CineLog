@@ -46,6 +46,21 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Interstellar"
 
+    # Actor profile & search tests
+    get person_path(10297)
+    assert_response :success
+    assert_includes response.body, "Matthew McConaughey"
+    assert_includes response.body, "Filmografi"
+
+    get search_path, params: { query: "Matthew McConaughey" }
+    assert_response :success
+    assert_includes response.body, "Oyuncular & Yönetmenler"
+    assert_includes response.body, "Matthew McConaughey"
+
+    get search_suggestions_path, params: { query: "Matthew" }
+    assert_response :success
+    assert_includes response.body, "Oyuncu"
+
     get genres_path
     assert_response :success
     assert_includes response.body, "Kataloğu"

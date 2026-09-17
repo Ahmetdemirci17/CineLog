@@ -49,9 +49,13 @@
       <h3 class="text-xs sm:text-sm font-bold text-[#f1f3f7] line-clamp-1 group-hover:text-[#a78bfa] transition">
         <%= link_to title, show_url %>
       </h3>
-      <div class="flex items-center gap-2 mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-[#8b90a0]">
+      <div class="flex items-center gap-1.5 mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-[#8b90a0] truncate">
         <% if year.present? %>
           <span><%= year %></span>
+        <% end %>
+        <% if item["character"].present? %>
+          <span class="text-zinc-600">•</span>
+          <span class="text-purple-300 font-medium truncate" title="<%= item['character'] %>"><%= item["character"] %></span>
         <% end %>
       </div>
     </div>

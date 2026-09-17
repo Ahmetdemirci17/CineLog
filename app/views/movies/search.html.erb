@@ -1,49 +1,117 @@
-<div class="space-y-8">
+<div class="space-y-8 sm:space-y-12">
   <!-- Search Header & Bar -->
-  <div class="max-w-2xl mx-auto text-center space-y-3">
-    <h1 class="text-3xl font-black text-[#f1f3f7] tracking-tight">
-      Film ve Dizi <span class="text-[#a78bfa]">Arama</span>
+  <div class="max-w-3xl mx-auto text-center space-y-3">
+    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+      Film, Dizi & Oyuncu <span class="text-purple-400">Arama</span>
     </h1>
-    <p class="text-xs sm:text-sm text-[#8b90a0]">CineLog arşivinde film ve dizi arayın.</p>
+    <p class="text-xs sm:text-sm text-zinc-400">CineLog arşivinde yapımları veya sevdiğiniz oyuncuları arayın.</p>
 
-    <div class="relative mt-4" data-controller="autocomplete" data-autocomplete-url-value="<%= search_suggestions_path %>">
+    <div class="relative mt-5" data-controller="autocomplete" data-autocomplete-url-value="<%= search_suggestions_path %>">
       <%= form_with url: search_path, method: :get do |f| %>
         <div class="relative flex items-center">
           <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-4 w-4 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <%= f.text_field :query, value: @query, autofocus: true, autocomplete: "off", placeholder: "Örn: Interstellar, Breaking Bad, Nolan...", data: { autocomplete_target: "input", action: "input->autocomplete#search focus->autocomplete#search" }, class: "w-full pl-11 pr-20 sm:pr-24 py-3 bg-[#15161c] border border-[#262833] focus:border-[#7c3aed] rounded-2xl text-[#f1f3f7] placeholder-[#686d80] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] text-base sm:text-sm transition shadow-sm" %>
-          <button type="submit" class="absolute right-2 px-3.5 py-1.5 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold text-xs rounded-xl transition cursor-pointer shadow-sm">
+          <%= f.text_field :query, value: @query, autofocus: true, autocomplete: "off", placeholder: "Film, dizi, oyuncu veya yönetmen ara (örn: McConaughey, Nolan, Interstellar)...", data: { autocomplete_target: "input", action: "input->autocomplete#search focus->autocomplete#search" }, class: "w-full pl-12 pr-24 py-3.5 bg-[#121217] border border-zinc-800 focus:border-purple-500 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-sm transition shadow-xl" %>
+          <button type="submit" class="absolute right-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer shadow-md shadow-purple-600/25">
             Ara
           </button>
         </div>
       <% end %>
 
-      <div data-autocomplete-target="results" class="hidden absolute left-0 right-0 top-full mt-2 bg-[#15161c] border border-[#262833] rounded-2xl shadow-2xl z-50 overflow-hidden text-left max-h-[60vh] overflow-y-auto">
+      <div data-autocomplete-target="results" class="hidden absolute left-0 right-0 top-full mt-3 bg-[#121217]/95 backdrop-blur-2xl border border-purple-500/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 overflow-hidden text-left max-h-[60vh] overflow-y-auto divide-y divide-zinc-800">
       </div>
     </div>
   </div>
 
   <% if @query.present? %>
-    <div class="space-y-4">
-      <div class="flex items-center justify-between border-b border-[#1f202a] pb-3">
-        <h2 class="text-xs sm:text-sm font-semibold text-[#8b90a0]">
-          "<span class="text-[#f1f3f7] font-bold"><%= @query %></span>" için <%= @results.size %> sonuç bulundu
+    <div class="space-y-10">
+      <!-- Search Summary -->
+      <div class="border-b border-zinc-800/80 pb-3 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-zinc-400">
+          "<span class="text-white font-bold"><%= @query %></span>" için sonuçlar
         </h2>
+        <span class="text-xs text-purple-400 font-medium">
+          <%= @people_results.size + @media_results.size %> sonuç bulundu
+        </span>
       </div>
 
-      <% if @results.empty? %>
-        <div class="text-center py-20 bg-[#15161c] rounded-2xl border border-[#262833]">
-          <p class="text-sm font-bold text-[#f1f3f7]">Aradığınız kriterlere uygun sonuç bulunamadı.</p>
-          <p class="text-xs text-[#8b90a0] mt-1">Farklı anahtar kelimeler ile tekrar deneyin.</p>
+      <!-- Actors / People Results Section -->
+      <% if @people_results.any? %>
+        <div class="space-y-4">
+          <h3 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <span class="w-2 h-4 rounded bg-purple-500"></span>
+            <span>Oyuncular & Yönetmenler</span>
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <% @people_results.each do |person| %>
+              <%
+                known_for = (person["known_for"] || []).map { |k| k["title"] || k["name"] }.compact.first(3).join(", ")
+                dept = person["known_for_department"] == "Directing" ? "Yönetmen" : "Oyuncu"
+              %>
+              <%= link_to person_path(person["id"]), class: "p-3.5 rounded-2xl bg-[#121217] border border-zinc-800 hover:border-purple-500/50 hover:bg-[#181920] transition duration-200 flex items-center gap-3.5 group cursor-pointer shadow-sm" do %>
+                <div class="w-14 h-18 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-zinc-800 shrink-0 border border-zinc-700/60 shadow group-hover:border-purple-500/40 transition">
+                  <% if person["profile_path"].present? %>
+                    <img src="<%= TmdbService.poster_url(person["profile_path"], size: "w185") %>" alt="<%= person["name"] %>" class="w-full h-full object-cover">
+                  <% else %>
+                    <div class="w-full h-full flex items-center justify-center text-xl text-zinc-600">👤</div>
+                  <% end %>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] uppercase border border-amber-500/25">
+                      <%= dept %>
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition truncate">
+                    <%= person["name"] %>
+                  </h4>
+                  <% if known_for.present? %>
+                    <p class="text-xs text-zinc-400 line-clamp-1 mt-0.5">
+                      <%= known_for %>
+                    </p>
+                  <% end %>
+                  <span class="text-[11px] text-purple-400 font-semibold inline-flex items-center gap-1 mt-1 group-hover:translate-x-0.5 transition duration-150">
+                    Filmlerini Gör →
+                  </span>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
         </div>
-      <% else %>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-          <% @results.each do |item| %>
-            <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
-          <% end %>
+      <% end %>
+
+      <!-- Movies & TV Shows Results Section -->
+      <% if @media_results.any? %>
+        <div class="space-y-4">
+          <h3 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <span class="w-2 h-4 rounded bg-purple-500"></span>
+            <span>Filmler & Diziler</span>
+          </h3>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+            <% @media_results.each do |item| %>
+              <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Empty State -->
+      <% if @people_results.empty? && @media_results.empty? %>
+        <div class="text-center py-20 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+          <div class="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+            🔍
+          </div>
+          <h3 class="text-lg font-bold text-white">Sonuç bulunamadı</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto mt-2">
+            "<span class="text-white font-semibold"><%= @query %></span>" için eşleşen film, dizi veya oyuncu bulunamadı.
+          </p>
+          <p class="text-xs text-zinc-500 mt-1">Farklı anahtar kelimeler ile tekrar deneyebilirsiniz.</p>
         </div>
       <% end %>
     </div>
