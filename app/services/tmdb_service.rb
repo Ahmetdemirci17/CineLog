@@ -109,8 +109,10 @@ class TmdbService
       page: page,
       language: language
     }
-    # When sorting strictly by vote_average, require at least 100 votes to avoid 1-vote 10/10 entries
-    params["vote_count.gte"] = 100 if sort_by.to_s.include?("vote_average")
+    # When sorting by vote_average, require at least 800 votes to ensure verified classic masterpieces (like IMDb Top 250)
+    if sort_by.to_s.include?("vote_average")
+      params["vote_count.gte"] = 800
+    end
 
     fetch_with_cache("discover/movie", params) do
       fallback_discover_by_genre(genre_id)
