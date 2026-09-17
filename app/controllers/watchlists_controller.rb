@@ -12,43 +12,51 @@ class WatchlistsController < ApplicationController
       service = TmdbService.new
       all_user_ids = current_user.watchlists.pluck(:tmdb_id).to_set
 
-      if params[:source_id] == "all"
-        @source_id = "all"
-        @source_title = "Tüm İzlediklerim (Karma)"
-        # Top 4 watched items
-        sources = @watched_items.reorder(user_rating: :desc, watched_at: :desc).limit(4)
-        raw_list = []
-        sources.each do |src|
-          res = src.media_type == "tv" ? service.tv_recommendations(src.tmdb_id) : service.movie_recommendations(src.tmdb_id)
-          items = res["results"] || []
-          items.each do |item|
-            item["_recommended_by"] = src.title
-            raw_list << item
-          end
-        end
-        @recommendations = raw_list.uniq { |m| m["id"] }.reject { |m| all_user_ids.include?(m["id"]) }.first(24)
-      elsif params[:source_id].present?
+      if params[:source_id].present? && params[:source_id] != "all"
         @source_item = @watched_items.find_by(tmdb_id: params[:source_id])
         if @source_item
           @source_id = @source_item.tmdb_id
           @source_title = @source_item.title
           res = @source_item.media_type == "tv" ? service.tv_recommendations(@source_item.tmdb_id) : service.movie_recommendations(@source_item.tmdb_id)
-          items = res["results"] || []
+          items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
           items.each { |item| item["_recommended_by"] = @source_item.title }
-          @recommendations = items.reject { |m| all_user_ids.include?(m["id"]) }.first(24)
+          @recommendations = items.first(30)
         else
           @recommendations = []
         end
       else
-        # Default to highest rated or latest watched item
-        @source_item = @watched_items.reorder(user_rating: :desc, watched_at: :desc).first
-        if @source_item
-          @source_id = @source_item.tmdb_id
-          @source_title = @source_item.title
-          res = @source_item.media_type == "tv" ? service.tv_recommendations(@source_item.tmdb_id) : service.movie_recommendations(@source_item.tmdb_id)
-          items = res["results"] || []
-          items.each { |item| item["_recommended_by"] = @source_item.title }
-          @recommendations = items.reject { |m| all_user_ids.include?(m["id"]) }.first(24)
+        # Default or "all" -> Tüm İzlediklerimden Karma (Interleaved diverse blend across watched library)
+        @source_id = "all"
+        @source_title = "Tüm İzlediklerim (Karma)"
+
+        if @watched_items.any?
+          # Select a diverse pool of up to 12 watched movies/shows:
+          # Include highest rated ones + random sample across their entire watch history (60+ items)
+          rated_sources = @watched_items.where.not(user_rating: nil).reorder(user_rating: :desc).limit(6).to_a
+          needed = 12 - rated_sources.size
+          remaining_sources = @watched_items.where.not(id: rated_sources.map(&:id)).order(Arel.sql("RANDOM()")).limit(needed).to_a
+          sources = (rated_sources + remaining_sources).uniq
+
+          # Fetch recommendations for each source
+          per_source_items = {}
+          sources.each do |src|
+            res = src.media_type == "tv" ? service.tv_recommendations(src.tmdb_id) : service.movie_recommendations(src.tmdb_id)
+            items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
+            items.each { |item| item["_recommended_by"] = src.title }
+            per_source_items[src.id] = items
+          end
+
+          # Interleave (Round-robin) so recommendations are evenly balanced across all sources
+          interleaved = []
+          max_len = per_source_items.values.map(&:size).max || 0
+          (0...max_len).each do |idx|
+            sources.each do |src|
+              item = per_source_items[src.id]&.[](idx)
+              interleaved << item if item
+            end
+          end
+
+          @recommendations = interleaved.uniq { |m| m["id"] }.first(36)
         else
           @recommendations = []
         end
