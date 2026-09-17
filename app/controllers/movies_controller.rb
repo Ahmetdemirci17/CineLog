@@ -48,7 +48,7 @@ class MoviesController < ApplicationController
         { id: 35, name: "Komedi" }
       ]
       @genre_sections = featured_genres.map do |genre|
-        res = service.discover_by_genre(genre[:id])
+        res = service.discover_by_genre(genre[:id], sort_by: "vote_average.desc")
         {
           id: genre[:id],
           name: genre[:name],

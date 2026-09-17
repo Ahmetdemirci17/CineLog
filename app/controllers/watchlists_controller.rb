@@ -30,12 +30,12 @@ class WatchlistsController < ApplicationController
         @source_title = "Tüm İzlediklerim (Karma)"
 
         if @watched_items.any?
-          # Select a diverse pool of up to 12 watched movies/shows:
-          # Include highest rated ones + random sample across their entire watch history (60+ items)
-          rated_sources = @watched_items.where.not(user_rating: nil).reorder(user_rating: :desc).limit(6).to_a
-          needed = 12 - rated_sources.size
-          remaining_sources = @watched_items.where.not(id: rated_sources.map(&:id)).order(Arel.sql("RANDOM()")).limit(needed).to_a
-          sources = (rated_sources + remaining_sources).uniq
+          all_watched_array = @watched_items.to_a
+          # Truly random & diverse selection across all 60+ watched items on each refresh
+          rated_items = all_watched_array.select { |w| w.user_rating.present? }.sort_by { |w| -w.user_rating.to_i }.first(4)
+          remaining = all_watched_array - rated_items
+          sample_count = [remaining.size, 12 - rated_items.size].min
+          sources = (rated_items + remaining.sample(sample_count)).shuffle
 
           # Fetch recommendations for each source
           per_source_items = {}

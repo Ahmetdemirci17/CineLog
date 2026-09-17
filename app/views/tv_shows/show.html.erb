@@ -11,92 +11,172 @@
   seasons_count = @tv["number_of_seasons"]
   episodes_count = @tv["number_of_episodes"]
   recommendations = @tv.dig("recommendations", "results") || []
+  trailer_key = TmdbService.trailer_key(@tv)
 %>
 
 <div class="space-y-8 sm:space-y-12">
   <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-[#15161c] border border-[#262833] shadow-lg">
-    <div class="relative h-[220px] sm:h-[360px] lg:h-[440px] w-full">
-      <% if backdrop_path.present? %>
-        <img src="<%= TmdbService.backdrop_url(backdrop_path) %>" alt="<%= name %>" class="w-full h-full object-cover object-center opacity-30">
-      <% else %>
-        <div class="w-full h-full bg-[#1c1d25] opacity-30"></div>
-      <% end %>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#15161c] via-[#15161c]/80 to-transparent"></div>
-      <div class="absolute inset-0 bg-gradient-to-r from-[#15161c] via-[#15161c]/90 to-transparent"></div>
-    </div>
-
-    <div class="relative -mt-24 sm:-mt-44 lg:-mt-56 px-4 sm:px-10 pb-6 sm:pb-10 flex flex-col md:flex-row gap-5 sm:gap-8 items-start">
-      <div class="w-32 sm:w-56 lg:w-64 shrink-0 rounded-xl sm:rounded-2xl overflow-hidden border border-[#262833] shadow-xl bg-[#1c1d25] self-center md:self-start">
-        <% if poster_path.present? %>
-          <img src="<%= TmdbService.poster_url(poster_path) %>" alt="<%= name %>" class="w-full h-auto object-cover">
+    <!-- Default Hero View (Backdrop + TV Info Overlay) -->
+    <div id="tv-hero-normal" class="relative">
+      <!-- Backdrop Background -->
+      <div class="relative h-[220px] sm:h-[360px] lg:h-[440px] w-full">
+        <% if backdrop_path.present? %>
+          <img src="<%= TmdbService.backdrop_url(backdrop_path) %>" alt="<%= name %>" class="w-full h-full object-cover object-center opacity-30">
         <% else %>
-          <div class="aspect-[2/3] flex items-center justify-center text-[#686d80] text-xs">Afiş Yok</div>
+          <div class="w-full h-full bg-[#1c1d25] opacity-30"></div>
         <% end %>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#15161c] via-[#15161c]/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#15161c] via-[#15161c]/90 to-transparent"></div>
       </div>
 
-      <div class="flex-1 space-y-3 sm:space-y-4 pt-2 sm:pt-14 w-full">
-        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase rounded-md bg-[#221e30] text-[#a78bfa] border border-[#a78bfa]/25">
-            Dizi
-          </span>
-          <% if year.present? %>
-            <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-[#1c1d25] text-[#8b90a0] border border-[#262833]">
-              <%= year %>
-            </span>
-          <% end %>
-          <% if seasons_count.present? %>
-            <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-[#1c1d25] text-[#8b90a0] border border-[#262833]">
-              <%= seasons_count %> Sezon <%= episodes_count ? "(#{episodes_count} Bölüm)" : "" %>
-            </span>
-          <% end %>
-          <% if rating.present? %>
-            <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md bg-[#1c1d25] text-amber-400 border border-[#262833] flex items-center gap-1">
-              <span>★</span>
-              <span><%= rating %></span>
-            </span>
+      <!-- TV Details Overlay -->
+      <div class="relative -mt-24 sm:-mt-44 lg:-mt-56 px-4 sm:px-10 pb-6 sm:pb-10 flex flex-col md:flex-row gap-5 sm:gap-8 items-start">
+        <!-- Poster with Matte Border -->
+        <div class="w-32 sm:w-56 lg:w-64 shrink-0 rounded-xl sm:rounded-2xl overflow-hidden border border-[#262833] shadow-xl bg-[#1c1d25] self-center md:self-start">
+          <% if poster_path.present? %>
+            <img src="<%= TmdbService.poster_url(poster_path) %>" alt="<%= name %>" class="w-full h-auto object-cover">
+          <% else %>
+            <div class="aspect-[2/3] flex items-center justify-center text-[#686d80] text-xs">Afiş Yok</div>
           <% end %>
         </div>
 
-        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#f1f3f7] tracking-tight leading-tight">
-          <%= name %>
-        </h1>
-
-        <% if original_name.present? && original_name != name %>
-          <p class="text-xs text-[#8b90a0] italic">Orijinal İsim: <%= original_name %></p>
-        <% end %>
-
-        <% if genres.any? %>
-          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
-            <span class="text-xs text-[#8b90a0] font-medium mr-1">Kategoriler:</span>
-            <% genres.each do |genre| %>
-              <%= link_to genre_path(genre["id"]), class: "px-2.5 sm:px-3 py-1 text-xs font-semibold rounded-lg bg-[#1c1d25] hover:bg-[#272236] text-[#a78bfa] border border-[#262833] hover:border-[#a78bfa]/40 transition duration-150 shadow-sm" do %>
-                <%= genre["name"] %>
-              <% end %>
+        <!-- Main Metadata -->
+        <div class="flex-1 space-y-3 sm:space-y-4 pt-2 sm:pt-14 w-full">
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase rounded-md bg-[#221e30] text-[#a78bfa] border border-[#a78bfa]/25">
+              Dizi
+            </span>
+            <% if year.present? %>
+              <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-[#1c1d25] text-[#8b90a0] border border-[#262833]">
+                <%= year %>
+              </span>
+            <% end %>
+            <% if seasons_count.present? %>
+              <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-[#1c1d25] text-[#8b90a0] border border-[#262833]">
+                <%= seasons_count %> Sezon <%= episodes_count ? "(#{episodes_count} Bölüm)" : "" %>
+              </span>
+            <% end %>
+            <% if rating.present? %>
+              <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md bg-[#1c1d25] text-amber-400 border border-[#262833] flex items-center gap-1">
+                <span>★</span>
+                <span><%= rating %></span>
+              </span>
             <% end %>
           </div>
-        <% end %>
 
-        <div class="pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-[#a78bfa] mb-1">Özet</h3>
-          <p class="text-xs sm:text-sm text-[#8b90a0] leading-relaxed max-w-3xl">
-            <%= @tv["overview"].presence || "Bu dizi için henüz Türkçe özet eklenmemiş." %>
-          </p>
-        </div>
+          <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#f1f3f7] tracking-tight leading-tight">
+            <%= name %>
+          </h1>
 
-        <div class="pt-3 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-          <div class="bg-[#1c1d25] p-2 sm:p-2.5 rounded-xl border border-[#262833]">
-            <%= render "watchlists/action_button", tmdb_id: @tv["id"], media_type: "tv", title: name, poster_path: poster_path, watchlist_item: @watchlist_item, compact: false %>
+          <% if original_name.present? && original_name != name %>
+            <p class="text-xs text-[#8b90a0] italic">Orijinal İsim: <%= original_name %></p>
+          <% end %>
+
+          <!-- Genres -->
+          <% if genres.any? %>
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
+              <span class="text-xs text-[#8b90a0] font-medium mr-1">Kategoriler:</span>
+              <% genres.each do |genre| %>
+                <%= link_to genre_path(genre["id"]), class: "px-2.5 sm:px-3 py-1 text-xs font-semibold rounded-lg bg-[#1c1d25] hover:bg-[#272236] text-[#a78bfa] border border-[#262833] hover:border-[#a78bfa]/40 transition duration-150 shadow-sm" do %>
+                  <%= genre["name"] %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- Overview -->
+          <div class="pt-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#a78bfa] mb-1">Özet</h3>
+            <p class="text-xs sm:text-sm text-[#8b90a0] leading-relaxed max-w-3xl">
+              <%= @tv["overview"].presence || "Bu dizi için henüz Türkçe özet eklenmemiş." %>
+            </p>
           </div>
 
-          <%= link_to new_community_post_path(tmdb_id: @tv["id"], media_type: "tv", movie_title: name), class: "px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-[#1c1d25] hover:bg-[#252333] text-[#f1f3f7] hover:text-[#a78bfa] border border-[#262833] hover:border-[#a78bfa]/30 transition duration-150 flex items-center justify-center gap-2" do %>
-            <svg class="w-4 h-4 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span>Toplulukta Bu Diziyi Sor</span>
-          <% end %>
+          <!-- Watchlist & Media Action Controls -->
+          <div class="pt-3 sm:pt-4 flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <div class="bg-[#1c1d25] p-2 sm:p-2.5 rounded-xl border border-[#262833]">
+              <%= render "watchlists/action_button", tmdb_id: @tv["id"], media_type: "tv", title: name, poster_path: poster_path, watchlist_item: @watchlist_item, compact: false %>
+            </div>
+
+            <% if trailer_key.present? %>
+              <button type="button" onclick="playTvHeroTrailer()" class="px-4 py-2.5 text-xs font-bold rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/25 transition duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-95 group">
+                <svg class="w-4 h-4 text-white fill-current transition group-hover:scale-110" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                <span>Fragmanı İzle</span>
+              </button>
+            <% end %>
+
+            <%= link_to new_community_post_path(tmdb_id: @tv["id"], media_type: "tv", movie_title: name), class: "px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-[#1c1d25] hover:bg-[#252333] text-[#f1f3f7] hover:text-[#a78bfa] border border-[#262833] hover:border-[#a78bfa]/30 transition duration-150 flex items-center justify-center gap-2" do %>
+              <svg class="w-4 h-4 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>Toplulukta Bu Diziyi Sor</span>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
+
+    <% if trailer_key.present? %>
+      <!-- Full Hero Trailer View (Replaces Backdrop & Details when active) -->
+      <div id="tv-hero-trailer" class="hidden relative w-full bg-black">
+        <!-- Trailer Bar with Close Button -->
+        <div class="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#111217] border-b border-[#262833] flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs font-bold text-white min-w-0">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></span>
+            <span class="truncate"><%= name %> — Resmi Fragman</span>
+          </div>
+          <button type="button" onclick="closeTvHeroTrailer()" class="shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#1c1d25] hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-[#262833] hover:border-red-500/40 transition duration-150 flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>Fragmanı Kapat / Bilgileri Göster</span>
+          </button>
+        </div>
+
+        <div class="relative w-full aspect-video max-h-[70vh] bg-black">
+          <iframe id="tv-hero-trailer-iframe"
+                  src=""
+                  data-trailer-url="https://www.youtube-nocookie.com/embed/<%= trailer_key %>?autoplay=1&rel=0"
+                  class="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+
+      <script>
+        function playTvHeroTrailer() {
+          const normalView = document.getElementById('tv-hero-normal');
+          const trailerView = document.getElementById('tv-hero-trailer');
+          const iframe = document.getElementById('tv-hero-trailer-iframe');
+          if (!normalView || !trailerView || !iframe) return;
+
+          normalView.classList.add('hidden');
+          trailerView.classList.remove('hidden');
+          iframe.src = iframe.getAttribute('data-trailer-url');
+          trailerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closeTvHeroTrailer() {
+          const normalView = document.getElementById('tv-hero-normal');
+          const trailerView = document.getElementById('tv-hero-trailer');
+          const iframe = document.getElementById('tv-hero-trailer-iframe');
+          if (!normalView || !trailerView || !iframe) return;
+
+          trailerView.classList.add('hidden');
+          normalView.classList.remove('hidden');
+          iframe.src = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            closeTvHeroTrailer();
+          }
+        });
+      </script>
+    <% end %>
   </div>
 
   <% if cast.any? %>

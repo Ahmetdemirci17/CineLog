@@ -59,10 +59,15 @@ class TmdbService
       movie["recommendations"] = recommendations if recommendations.is_a?(Hash) && recommendations["results"].present?
     end
 
-    # Fetch videos separately
-    unless movie.key?("videos")
+    # Fetch videos separately (fallback to en-US if tr-TR has no videos)
+    unless movie.key?("videos") && movie["videos"].is_a?(Hash) && movie["videos"]["results"].present?
       videos = fetch_with_cache("movie/#{id}/videos", { language: language })
-      movie["videos"] = videos if videos.is_a?(Hash) && videos["results"].present?
+      if videos.is_a?(Hash) && videos["results"].present?
+        movie["videos"] = videos
+      else
+        en_videos = fetch_with_cache("movie/#{id}/videos", { language: "en-US" })
+        movie["videos"] = en_videos if en_videos.is_a?(Hash) && en_videos["results"].present?
+      end
     end
 
     movie
@@ -86,9 +91,14 @@ class TmdbService
       show["recommendations"] = recommendations if recommendations.is_a?(Hash) && recommendations["results"].present?
     end
 
-    unless show.key?("videos")
+    unless show.key?("videos") && show["videos"].is_a?(Hash) && show["videos"]["results"].present?
       videos = fetch_with_cache("tv/#{id}/videos", { language: language })
-      show["videos"] = videos if videos.is_a?(Hash) && videos["results"].present?
+      if videos.is_a?(Hash) && videos["results"].present?
+        show["videos"] = videos
+      else
+        en_videos = fetch_with_cache("tv/#{id}/videos", { language: "en-US" })
+        show["videos"] = en_videos if en_videos.is_a?(Hash) && en_videos["results"].present?
+      end
     end
 
     show
@@ -109,9 +119,13 @@ class TmdbService
       page: page,
       language: language
     }
-    # When sorting by vote_average, require at least 800 votes to ensure verified classic masterpieces (like IMDb Top 250)
+
     if sort_by.to_s.include?("vote_average")
-      params["vote_count.gte"] = 800
+      # Require at least 1500 votes for major genres, 300 for small genres (Western, Docs)
+      # and filter out unreleased movies so all movies in the genre are listed across all pages
+      threshold = [99, 10770, 37].include?(genre_id.to_i) ? 300 : 1500
+      params["vote_count.gte"] = threshold
+      params["primary_release_date.lte"] = Date.current.to_s
     end
 
     fetch_with_cache("discover/movie", params) do
@@ -194,6 +208,21 @@ class TmdbService
     return nil if path.blank?
     return path if path.start_with?("http")
     "#{IMAGE_BASE_URL}/#{size}#{path}"
+  end
+
+  # Extract YouTube trailer key from movie/tv item
+  def self.trailer_key(media_item)
+    return nil unless media_item.is_a?(Hash)
+    videos = media_item.dig("videos", "results") || []
+    return nil if videos.empty?
+
+    # 1. Official YouTube Trailer
+    trailer = videos.find { |v| v["site"] == "YouTube" && v["type"] == "Trailer" && v["key"].present? }
+    # 2. Official YouTube Teaser
+    trailer ||= videos.find { |v| v["site"] == "YouTube" && v["type"] == "Teaser" && v["key"].present? }
+    # 3. Any YouTube video
+    trailer ||= videos.find { |v| v["site"] == "YouTube" && v["key"].present? }
+    trailer&.dig("key")
   end
 
   private
