@@ -98,6 +98,21 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     get watchlists_path(tab: "watched")
     assert_response :success
 
+    # Recommendations tab tests
+    get watchlists_path(tab: "recommendations")
+    assert_response :success
+    assert_includes response.body, "Sana Özel Öneriler"
+
+    get watchlists_path(tab: "recommendations", source_id: "all")
+    assert_response :success
+
+    get watchlists_path(tab: "recommendations", source_id: 157336)
+    assert_response :success
+
+    # Homepage personalized recommendations for signed in user
+    get root_path
+    assert_response :success
+
     get new_community_post_path
     assert_response :success
 

@@ -145,6 +145,44 @@ class TmdbService
     end
   end
 
+  # Movie Recommendations (with similar fallback enrichment)
+  def movie_recommendations(id, page: 1, language: "tr-TR")
+    res = fetch_with_cache("movie/#{id}/recommendations", { page: page, language: language }) do
+      { "results" => [] }
+    end
+    results = res.is_a?(Hash) ? (res["results"] || []).dup : []
+
+    if results.size < 8
+      similar = fetch_with_cache("movie/#{id}/similar", { page: page, language: language }) do
+        { "results" => [] }
+      end
+      sim_results = similar.is_a?(Hash) ? (similar["results"] || []) : []
+      results = (results + sim_results).uniq { |m| m["id"] }
+      res["results"] = results if res.is_a?(Hash)
+    end
+
+    res.is_a?(Hash) ? res : { "results" => [] }
+  end
+
+  # TV Recommendations (with similar fallback enrichment)
+  def tv_recommendations(id, page: 1, language: "tr-TR")
+    res = fetch_with_cache("tv/#{id}/recommendations", { page: page, language: language }) do
+      { "results" => [] }
+    end
+    results = res.is_a?(Hash) ? (res["results"] || []).dup : []
+
+    if results.size < 8
+      similar = fetch_with_cache("tv/#{id}/similar", { page: page, language: language }) do
+        { "results" => [] }
+      end
+      sim_results = similar.is_a?(Hash) ? (similar["results"] || []) : []
+      results = (results + sim_results).uniq { |m| m["id"] }
+      res["results"] = results if res.is_a?(Hash)
+    end
+
+    res.is_a?(Hash) ? res : { "results" => [] }
+  end
+
   # Image URL Helpers
   def self.poster_url(path, size: "w500")
     return nil if path.blank?

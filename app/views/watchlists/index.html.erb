@@ -9,8 +9,8 @@
     </div>
 
     <!-- Segmented Pill Bar Navigation -->
-    <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner">
-      <%= link_to watchlists_path(tab: "plan_to_watch"), class: "px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+    <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner overflow-x-auto max-w-full">
+      <%= link_to watchlists_path(tab: "plan_to_watch"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -20,13 +20,23 @@
         </span>
       <% end %>
 
-      <%= link_to watchlists_path(tab: "watched"), class: "px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+      <%= link_to watchlists_path(tab: "watched"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span>İzlediklerim</span>
         <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'watched' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
           <%= @watched_items.count %>
+        </span>
+      <% end %>
+
+      <%= link_to watchlists_path(tab: "recommendations"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'recommendations' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+        <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span>Sana Özel Öneriler</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full <%= @active_tab == 'recommendations' ? 'bg-black/30 text-white' : 'bg-purple-600/20 text-purple-300 border border-purple-500/30' %>">
+          ✨ Yapay Zeka
         </span>
       <% end %>
     </div>
@@ -101,12 +111,108 @@
               </div>
             </div>
 
-            <!-- Card Bottom Bar: Quick Rating -->
-            <div class="p-2.5 bg-[#121217] border-t border-zinc-800/80">
+            <!-- Card Bottom Bar: Quick Rating & Recommendation Link -->
+            <div class="p-2.5 bg-[#121217] border-t border-zinc-800/80 space-y-1.5">
               <%= form_with model: item, method: :patch, class: "flex items-center gap-1.5 w-full" do |f| %>
                 <%= f.select :user_rating, (1..10).map { |r| ["★ #{r}", r] }, { selected: item.user_rating, include_blank: "Puan Değiştir" }, class: "text-xs bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-zinc-200 focus:outline-none focus:border-purple-500 w-full transition cursor-pointer", onchange: "this.form.requestSubmit()" %>
               <% end %>
+
+              <%= link_to watchlists_path(tab: "recommendations", source_id: item.tmdb_id), class: "w-full py-1.5 px-2 rounded-xl bg-purple-600/10 hover:bg-purple-600/25 border border-purple-500/25 text-purple-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition duration-150" do %>
+                <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Benzerlerini Öner</span>
+              <% end %>
             </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% elsif @active_tab == "recommendations" %>
+    <% if @watched_items.empty? %>
+      <div class="text-center py-20 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+        <div class="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+          ✨
+        </div>
+        <h3 class="text-lg font-bold text-white">Henüz izlediğiniz bir yapım yok</h3>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mt-2 leading-relaxed">
+          Kişiselleştirilmiş film ve dizi önerileri alabilmek için daha önce izlediğiniz veya beğendiğiniz yapımları "İzledim" olarak işaretleyin.
+        </p>
+        <div class="mt-6">
+          <%= link_to "Kataloğu Keşfet", root_path, class: "px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/25 transition duration-200 inline-block" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="space-y-6">
+        <!-- Interactive Source Switcher Bar -->
+        <div class="bg-[#121217] border border-purple-500/20 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-600/25 to-purple-950/40 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 shadow-inner">
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-base sm:text-lg font-bold text-white tracking-tight">Öneri Temeli</h2>
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-lg bg-purple-600/20 text-purple-300 border border-purple-500/30">
+                  <%= @source_title %>
+                </span>
+              </div>
+              <p class="text-xs text-zinc-400 mt-0.5">
+                Bu öneriler seçtiğiniz yapımın tür, konu ve benzerlik algoritmasına göre oluşturulmuştur.
+              </p>
+            </div>
+          </div>
+
+          <!-- Switch Source Dropdown -->
+          <div class="flex items-center gap-2 self-start md:self-auto shrink-0">
+            <label for="recommendation_source_select" class="text-xs font-semibold text-zinc-400">Kaynak Film:</label>
+            <select id="recommendation_source_select" onchange="window.location.href = '<%= watchlists_path(tab: 'recommendations') %>' + '&source_id=' + this.value" class="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 transition cursor-pointer max-w-[260px] sm:max-w-xs shadow-inner">
+              <option value="all" <%= 'selected' if @source_id == 'all' %>>🎲 Tüm İzlediklerimden Karma</option>
+              <optgroup label="İzlediğiniz Filmler & Diziler">
+                <% @watched_items.each do |w| %>
+                  <option value="<%= w.tmdb_id %>" <%= 'selected' if @source_id.to_s == w.tmdb_id.to_s %>>
+                    <%= w.title %> <%= "(★#{w.user_rating})" if w.user_rating.present? %>
+                  </option>
+                <% end %>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <!-- Quick Source Select Chips Bar -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          <span class="text-xs text-zinc-500 shrink-0 font-semibold uppercase tracking-wider">Hızlı Seçim:</span>
+          <%= link_to watchlists_path(tab: "recommendations", source_id: "all"), class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{@source_id == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
+            <span>🎲 Karma Algoritma</span>
+          <% end %>
+          <% @watched_items.first(8).each do |w| %>
+            <%= link_to watchlists_path(tab: "recommendations", source_id: w.tmdb_id), class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{@source_id.to_s == w.tmdb_id.to_s ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
+              <span class="truncate max-w-[130px] sm:max-w-[180px]"><%= w.title %></span>
+              <% if w.user_rating.present? %>
+                <span class="text-amber-400 text-[10px] font-bold">★<%= w.user_rating %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <!-- Recommendations Grid -->
+        <% if @recommendations.empty? %>
+          <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+            <div class="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+              🔍
+            </div>
+            <h3 class="text-lg font-bold text-white">Bu yapıma uygun yeni öneri bulunamadı</h3>
+            <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto mt-2 leading-relaxed">
+              Yukarıdaki seçiciden veya hızlı seçim butonlarından izlediğiniz başka bir filmi seçebilirsiniz.
+            </p>
+          </div>
+        <% else %>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-6">
+            <% @recommendations.each do |rec| %>
+              <%= render "movies/card", item: rec, watchlist_map: @user_watchlist_map %>
+            <% end %>
           </div>
         <% end %>
       </div>

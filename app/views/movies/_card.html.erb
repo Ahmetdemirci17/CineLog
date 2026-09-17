@@ -58,6 +58,11 @@
           <span class="text-purple-300 font-medium truncate" title="<%= item['character'] %>"><%= item["character"] %></span>
         <% end %>
       </div>
+      <% if item["_recommended_by"].present? %>
+        <div class="mt-1 px-1.5 py-0.5 rounded-md bg-purple-950/60 border border-purple-500/25 text-[10px] text-purple-300 truncate font-medium" title="<%= item['_recommended_by'] %> benzeri">
+          ✨ <%= item["_recommended_by"] %> benzeri
+        </div>
+      <% end %>
     </div>
 
     <!-- Watchlist Action Button -->

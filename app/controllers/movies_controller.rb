@@ -25,6 +25,20 @@ class MoviesController < ApplicationController
       @user_watchlist_map = {}
     end
 
+    # Personalized Recommendations for Homepage
+    if user_signed_in? && @active_tab == "popular"
+      @recommendation_source = current_user.watchlists.watched.reorder(user_rating: :desc, watched_at: :desc).first
+      if @recommendation_source
+        res = @recommendation_source.media_type == "tv" ? service.tv_recommendations(@recommendation_source.tmdb_id) : service.movie_recommendations(@recommendation_source.tmdb_id)
+        all_user_ids = current_user.watchlists.pluck(:tmdb_id).to_set
+        @recommended_items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }.first(15)
+      else
+        @recommended_items = []
+      end
+    else
+      @recommended_items = []
+    end
+
     # Featured genre rows for homepage horizontal carousels
     if @active_tab == "popular"
       featured_genres = [
