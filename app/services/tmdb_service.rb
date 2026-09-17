@@ -113,20 +113,16 @@ class TmdbService
 
   # Discover Movies by Genre ID
   def discover_by_genre(genre_id, page: 1, sort_by: "popularity.desc", language: "tr-TR")
+    if sort_by.to_s.include?("vote_average")
+      return discover_top_rated_weighted(genre_id, page: page, language: language)
+    end
+
     params = {
       with_genres: genre_id,
       sort_by: sort_by,
       page: page,
       language: language
     }
-
-    if sort_by.to_s.include?("vote_average")
-      # Require at least 1500 votes for major genres, 300 for small genres (Western, Docs)
-      # and filter out unreleased movies so all movies in the genre are listed across all pages
-      threshold = [99, 10770, 37].include?(genre_id.to_i) ? 300 : 1500
-      params["vote_count.gte"] = threshold
-      params["primary_release_date.lte"] = Date.current.to_s
-    end
 
     fetch_with_cache("discover/movie", params) do
       fallback_discover_by_genre(genre_id)
@@ -226,6 +222,93 @@ class TmdbService
   end
 
   private
+
+  # IMDb Top 250 Bayesian formula:
+  # WR = (v / (v + m)) * R + (m / (v + m)) * C
+  def bayesian_score(m, m_const = 1500.0, c_const = 6.9)
+    v = m["vote_count"].to_f
+    r = m["vote_average"].to_f
+    ((v / (v + m_const)) * r) + ((m_const / (v + m_const)) * c_const)
+  end
+
+  # Seamless Bayesian Weighted Ranking for "En Beğenilenler"
+  # Preserves full genre film count and complete pagination without drop
+  def discover_top_rated_weighted(genre_id, page: 1, language: "tr-TR")
+    page_num = [[page.to_i, 1].max, 500].min
+    per_page = 20
+
+    # 1. Obtain baseline total count of movies in this genre so total_results does NOT drop
+    base_res = fetch_with_cache("discover/movie", { with_genres: genre_id, language: language })
+    total_results = base_res.is_a?(Hash) && base_res["total_results"].present? ? base_res["total_results"].to_i : 20001
+    total_pages = base_res.is_a?(Hash) && base_res["total_pages"].present? ? [[base_res["total_pages"].to_i, 1].max, 500].min : 500
+
+    m_const = 1500.0
+    c_const = 6.9
+
+    # 2. Build or fetch cached Bayesian top pool for the genre
+    cache_key = "tmdb_bayesian_top_pool/genre_#{genre_id}/#{language}"
+    ranked_pool = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
+      candidates = []
+
+      # Candidate set 1: top 100 most voted movies in genre (pages 1..5)
+      (1..5).each do |p|
+        res = fetch_with_cache("discover/movie", {
+          with_genres: genre_id,
+          sort_by: "vote_count.desc",
+          "vote_average.gte" => 6.5,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      # Candidate set 2: highest rated movies with at least 500 votes (pages 1..3)
+      (1..3).each do |p|
+        res = fetch_with_cache("discover/movie", {
+          with_genres: genre_id,
+          sort_by: "vote_average.desc",
+          "vote_count.gte" => 500,
+          "primary_release_date.lte" => Date.current.to_s,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      unique_movies = candidates.uniq { |m| m["id"] }
+
+      if unique_movies.blank?
+        fb = fallback_discover_by_genre(genre_id)
+        unique_movies = fb["results"] || []
+      end
+
+      unique_movies.sort_by { |m| -bayesian_score(m, m_const, c_const) }
+    end
+
+    max_full_pool_pages = ranked_pool.size / per_page
+
+    results = if page_num <= max_full_pool_pages
+      offset = (page_num - 1) * per_page
+      ranked_pool.slice(offset, per_page) || []
+    else
+      # Beyond the pre-ranked pool, query TMDB vote_count.desc directly and sort within the page by Bayesian score
+      direct_res = fetch_with_cache("discover/movie", {
+        with_genres: genre_id,
+        sort_by: "vote_count.desc",
+        page: page_num,
+        language: language
+      })
+      list = direct_res.is_a?(Hash) && direct_res["results"].present? ? direct_res["results"] : []
+      list.sort_by { |m| -bayesian_score(m, m_const, c_const) }
+    end
+
+    {
+      "page" => page_num,
+      "results" => results,
+      "total_pages" => total_pages,
+      "total_results" => total_results
+    }
+  end
 
   def client
     @client ||= Faraday.new(url: BASE_URL) do |f|

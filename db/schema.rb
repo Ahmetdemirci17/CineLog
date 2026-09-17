@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_141324) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_191448) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,8 +52,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_141324) do
 
   create_table "watchlists", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "genres"
     t.string "media_type", null: false
     t.string "poster_path"
+    t.integer "runtime"
     t.integer "status", default: 0, null: false
     t.string "title", null: false
     t.integer "tmdb_id", null: false

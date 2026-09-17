@@ -7,6 +7,7 @@ class WatchlistsController < ApplicationController
     @plan_to_watch_items = current_user.watchlists.plan_to_watch
     @watched_items = current_user.watchlists.watched
     @user_watchlist_map = current_user.watchlists.index_by { |w| [w.tmdb_id, w.media_type] }
+    @stats = Watchlist.stats_for(current_user)
 
     if @active_tab == "recommendations"
       service = TmdbService.new

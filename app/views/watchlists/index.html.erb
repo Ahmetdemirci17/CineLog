@@ -57,6 +57,127 @@
         </div>
       </div>
     <% else %>
+      <% if @stats.present? %>
+        <!-- Sinema Karnem / Watchlist Stats Panel -->
+        <div class="bg-[#121217] rounded-2xl sm:rounded-3xl border border-zinc-800/80 p-4 sm:p-6 shadow-xl relative overflow-hidden">
+          <!-- Background Ambient Glow -->
+          <div class="absolute -top-24 -right-24 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-zinc-800/60 relative z-10">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                  <span>Sinema Karnem</span>
+                  <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">İstatistikler</span>
+                </h2>
+                <p class="text-[11px] text-zinc-400">İzlediğiniz yapımların süre, puan ve tür analizi</p>
+              </div>
+            </div>
+
+            <span class="text-xs text-zinc-500 font-medium hidden sm:inline-block">
+              <%= @stats[:total_watched] %> Yapım İncelendi
+            </span>
+          </div>
+
+          <!-- 4 Stats Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10">
+            <!-- 1. Card: Total Runtime -->
+            <div class="bg-[#181920] rounded-xl sm:rounded-2xl p-4 border border-zinc-800 flex flex-col justify-between group hover:border-purple-500/40 transition">
+              <div class="flex items-center justify-between text-zinc-400 text-xs mb-2">
+                <span class="font-medium text-zinc-400">Toplam Süre</span>
+                <span class="text-purple-400">⏱️</span>
+              </div>
+              <div>
+                <div class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  <%= @stats[:total_hours] %> <span class="text-sm font-semibold text-zinc-400">saat</span>
+                </div>
+                <p class="text-[11px] text-purple-300 font-medium mt-1">
+                  <% if @stats[:days] > 0 %>
+                    <%= @stats[:days] %> gün <%= @stats[:remaining_hours] %> saat maraton
+                  <% else %>
+                    <%= @stats[:total_minutes] %> dakika
+                  <% end %>
+                </p>
+              </div>
+            </div>
+
+            <!-- 2. Card: Average Rating -->
+            <div class="bg-[#181920] rounded-xl sm:rounded-2xl p-4 border border-zinc-800 flex flex-col justify-between group hover:border-amber-500/40 transition">
+              <div class="flex items-center justify-between text-zinc-400 text-xs mb-2">
+                <span class="font-medium text-zinc-400">Puan Ortalaması</span>
+                <span class="text-amber-400">★</span>
+              </div>
+              <div>
+                <div class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-baseline gap-1.5">
+                  <% if @stats[:avg_rating] %>
+                    <span class="text-amber-400">★</span>
+                    <span><%= @stats[:avg_rating] %></span>
+                    <span class="text-xs font-normal text-zinc-500">/ 10</span>
+                  <% else %>
+                    <span class="text-sm font-semibold text-zinc-500">Puan Yok</span>
+                  <% end %>
+                </div>
+                <p class="text-[11px] text-zinc-400 mt-1">
+                  <%= @stats[:rated_count] %> yapım puanlandı
+                </p>
+              </div>
+            </div>
+
+            <!-- 3. Card: Watch Volume -->
+            <div class="bg-[#181920] rounded-xl sm:rounded-2xl p-4 border border-zinc-800 flex flex-col justify-between group hover:border-blue-500/40 transition">
+              <div class="flex items-center justify-between text-zinc-400 text-xs mb-2">
+                <span class="font-medium text-zinc-400">İzleme Hacmi</span>
+                <span class="text-blue-400">🎬</span>
+              </div>
+              <div>
+                <div class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  <%= @stats[:total_watched] %> <span class="text-sm font-semibold text-zinc-400">yapım</span>
+                </div>
+                <p class="text-[11px] text-zinc-400 mt-1 flex items-center gap-2">
+                  <span><%= @stats[:movies_count] %> Film</span>
+                  <% if @stats[:tv_count] > 0 %>
+                    <span>•</span>
+                    <span><%= @stats[:tv_count] %> Dizi</span>
+                  <% end %>
+                </p>
+              </div>
+            </div>
+
+            <!-- 4. Card: Top Genres Distribution -->
+            <div class="bg-[#181920] rounded-xl sm:rounded-2xl p-4 border border-zinc-800 flex flex-col justify-between group hover:border-emerald-500/40 transition">
+              <div class="flex items-center justify-between text-zinc-400 text-xs mb-2">
+                <span class="font-medium text-zinc-400">Favori Türler</span>
+                <span class="text-emerald-400">📊</span>
+              </div>
+              <div class="space-y-1.5 pt-0.5">
+                <% if @stats[:top_genres].any? %>
+                  <% @stats[:top_genres].first(3).each_with_index do |g, idx| %>
+                    <div>
+                      <div class="flex justify-between text-[11px] font-semibold text-zinc-300 mb-0.5">
+                        <span class="truncate"><%= g[:name] %></span>
+                        <span class="text-zinc-400 ml-1 font-mono">%<%= g[:percentage] %></span>
+                      </div>
+                      <div class="w-full h-1 rounded-full bg-zinc-800 overflow-hidden">
+                        <% bar_color = ['bg-purple-500', 'bg-blue-500', 'bg-emerald-500'][idx % 3] %>
+                        <div class="h-full rounded-full <%= bar_color %>" style="width: <%= [g[:percentage] * 2, 100].min %>%;"></div>
+                      </div>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <p class="text-[11px] text-zinc-500">Tür verisi henüz yok.</p>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6" id="watched_items_container">
         <% @watched_items.each do |item| %>
           <% media_url = item.media_type == 'tv' ? tv_show_path(item.tmdb_id) : movie_path(item.tmdb_id) %>
