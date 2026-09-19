@@ -21,6 +21,8 @@ gem "tailwindcss-rails"
 gem "jbuilder"
 # Authentication
 gem "devise"
+gem "omniauth-google-oauth2"
+gem "omniauth-rails_csrf_protection"
 
 # HTTP client for TMDB API
 gem "faraday"

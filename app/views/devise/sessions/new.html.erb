@@ -40,6 +40,27 @@
       </div>
     <% end %>
 
+    <!-- Divider -->
+    <div class="my-4 flex items-center">
+      <div class="flex-grow border-t border-[#262833]"></div>
+      <span class="mx-3 text-[#686d80] text-xs uppercase font-medium">veya</span>
+      <div class="flex-grow border-t border-[#262833]"></div>
+    </div>
+
+    <!-- Google Button -->
+    <%= button_to user_google_oauth2_omniauth_authorize_path,
+        method: :post,
+        data: { turbo: false },
+        class: "w-full flex items-center justify-center gap-3 bg-[#1c1d25] hover:bg-[#23242e] text-[#f1f3f7] font-medium py-2.5 px-4 rounded-xl border border-[#262833] hover:border-[#383a4a] text-xs sm:text-sm shadow-sm transition duration-150 cursor-pointer" do %>
+      <svg width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 9 3.3l6.7-6.7C34.5 2.5 29.8 0 24 0 14.8 0 7 5.4 3 13.5l7.9 6.1C13 13.8 18 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.2-3.1-.5-4.5H24v9h12.8c-1.3 3.5-3.8 6.4-7.2 8.3l7.9 6.1c4.6-4.2 7.5-10.5 7.5-18.9z"/>
+        <path fill="#FBBC05" d="M10.9 28.5c-1-3-1-6.3 0-9.3L3 13.1c-2 4.1-2 8.9 0 13l7.9-6.1z"/>
+        <path fill="#34A853" d="M24 48c6.5 0 11.9-2.2 15.9-5.9l-7.9-6.1c-2.2 1.5-5 2.3-8 2.3-6.1 0-11.2-4.1-13-9.7L3 34.9C7 42.6 14.8 48 24 48z"/>
+      </svg>
+      Google ile Giriş Yap
+    <% end %>
+
     <div class="text-center pt-1">
       <p class="text-xs text-[#8b90a0]">
         Hesabınız yok mu?
