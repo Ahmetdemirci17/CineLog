@@ -10,7 +10,7 @@
 
     <!-- Segmented Pill Bar Navigation -->
     <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner overflow-x-auto max-w-full">
-      <%= link_to watchlists_path(tab: "plan_to_watch"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+      <%= link_to watchlists_path(tab: "plan_to_watch", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -20,7 +20,7 @@
         </span>
       <% end %>
 
-      <%= link_to watchlists_path(tab: "watched"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+      <%= link_to watchlists_path(tab: "watched", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -30,7 +30,7 @@
         </span>
       <% end %>
 
-      <%= link_to watchlists_path(tab: "recommendations"), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'recommendations' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+      <%= link_to watchlists_path(tab: "recommendations", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'recommendations' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
         <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
@@ -38,6 +38,31 @@
         <span class="px-2 py-0.5 text-[10px] font-bold rounded-full <%= @active_tab == 'recommendations' ? 'bg-black/30 text-white' : 'bg-purple-600/20 text-purple-300 border border-purple-500/30' %>">
           ✨ Yapay Zeka
         </span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Media Type Filter (Tümü / Filmler / Diziler) -->
+  <%
+    all_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_total : @watched_total
+    movie_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_movies_count : @watched_movies_count
+    tv_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_tv_count : @watched_tv_count
+  %>
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[#121217] border border-zinc-800/80">
+      <%= link_to watchlists_path(tab: @active_tab), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'all' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+        <span>Tümü</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= all_cnt %></span>
+      <% end %>
+
+      <%= link_to watchlists_path(tab: @active_tab, media_type: "movie"), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'movie' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+        <span>🎬 Filmler</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= movie_cnt %></span>
+      <% end %>
+
+      <%= link_to watchlists_path(tab: @active_tab, media_type: "tv"), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+        <span>📺 Diziler</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= tv_cnt %></span>
       <% end %>
     </div>
   </div>
@@ -422,10 +447,18 @@
 
             <!-- Card Bottom Bar: Mark as Watched -->
             <div class="p-2.5 bg-[#121217] border-t border-zinc-800/80">
-              <%= form_with model: item, method: :patch, class: "w-full" do |f| %>
-                <%= f.hidden_field :status, value: "watched" %>
-                <%= f.submit "İzledim ✓", class: "w-full py-1.5 text-xs font-semibold rounded-xl bg-purple-600 hover:bg-purple-500 text-white cursor-pointer transition shadow-md shadow-purple-600/20 text-center" %>
-              <% end %>
+              <button type="button"
+                data-rating-modal-trigger
+                data-tmdb-id="<%= item.tmdb_id %>"
+                data-media-type="<%= item.media_type %>"
+                data-title="<%= item.title %>"
+                data-poster-path="<%= item.poster_path %>"
+                data-poster-url="<%= item.poster_path.present? ? TmdbService.poster_url(item.poster_path) : '' %>"
+                data-watchlist-id="<%= item.id %>"
+                data-current-rating="<%= item.user_rating %>"
+                class="w-full py-1.5 text-xs font-semibold rounded-xl bg-purple-600 hover:bg-purple-500 text-white cursor-pointer transition shadow-md shadow-purple-600/20 text-center flex items-center justify-center gap-1.5">
+                <span>İzledim ✓</span>
+              </button>
             </div>
           </div>
         <% end %>

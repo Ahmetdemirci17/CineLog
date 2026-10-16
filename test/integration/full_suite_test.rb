@@ -36,6 +36,16 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Parazit"
     refute_includes response.body, "Yıldızlararası"
 
+    get tv_shows_path
+    assert_response :success
+    assert_includes response.body, "Dizileri Keşfet"
+
+    get tv_shows_path(tab: "trending")
+    assert_response :success
+
+    get tv_shows_path(tab: "top_rated")
+    assert_response :success
+
     get tv_show_path(95557)
     assert_response :success
 
@@ -95,7 +105,16 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     get watchlists_path
     assert_response :success
 
+    get watchlists_path(media_type: "tv")
+    assert_response :success
+
+    get watchlists_path(media_type: "movie")
+    assert_response :success
+
     get watchlists_path(tab: "watched")
+    assert_response :success
+
+    get watchlists_path(tab: "watched", media_type: "tv")
     assert_response :success
 
     # Recommendations tab tests
@@ -142,6 +161,42 @@ class FullSuiteTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "turbo-stream"
     assert_equal 10, wl.reload.user_rating
     assert_equal "watched", wl.status
+
+    # Direct creation as watched with rating
+    post watchlists_path, params: {
+      watchlist: {
+        tmdb_id: 157336,
+        media_type: "movie",
+        title: "Interstellar",
+        poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        status: "watched",
+        user_rating: 9
+      }
+    }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    assert_includes response.body, "turbo-stream"
+    wl_rated = @user.watchlists.find_by(tmdb_id: 157336)
+    assert_not_nil wl_rated
+    assert_equal "watched", wl_rated.status
+    assert_equal 9, wl_rated.user_rating
+
+    # Direct creation as watched without rating (unrated)
+    post watchlists_path, params: {
+      watchlist: {
+        tmdb_id: 603,
+        media_type: "movie",
+        title: "The Matrix",
+        poster_path: "/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+        status: "watched",
+        user_rating: ""
+      }
+    }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    assert_includes response.body, "turbo-stream"
+    wl_unrated = @user.watchlists.find_by(tmdb_id: 603)
+    assert_not_nil wl_unrated
+    assert_equal "watched", wl_unrated.status
+    assert_nil wl_unrated.user_rating
 
     # Hotwire Turbo Stream Reply creation
     post community_post_community_replies_path(@post), params: {

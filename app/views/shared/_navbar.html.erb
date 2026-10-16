@@ -20,6 +20,7 @@
         <%
           req_p = request.path
           is_h = (req_p == root_path || req_p == "/movies")
+          is_tv = req_p.start_with?("/tv")
           is_g = req_p.start_with?("/katalog")
           is_w = req_p.start_with?("/watchlists")
           is_c = req_p.start_with?("/community")
@@ -30,6 +31,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             <span>Ana Sayfa</span>
+          <% end %>
+
+          <%= link_to tv_shows_path, class: "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center gap-2 #{is_tv ? 'bg-purple-600/15 text-purple-300 border border-purple-500/25' : 'text-zinc-300 hover:text-white hover:bg-zinc-800/60'}" do %>
+            <svg class="w-4 h-4 #{is_tv ? 'text-purple-400' : 'text-zinc-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>Diziler</span>
           <% end %>
 
           <!-- Katalog Dropdown (Türler) -->
@@ -187,6 +195,7 @@
   <%
     current_p = request.path
     is_home = (current_p == root_path || current_p == "/movies")
+    is_tv_m = current_p.start_with?("/tv")
     is_genres = current_p.start_with?("/katalog")
     is_search = current_p.start_with?("/search")
     is_watchlist = current_p.start_with?("/watchlists")
@@ -194,7 +203,7 @@
   %>
   <div class="flex items-center justify-around">
     <!-- Ana Sayfa -->
-    <%= link_to root_path, class: "flex flex-col items-center py-1 px-3 rounded-xl transition duration-150 #{is_home ? 'text-purple-400' : 'text-zinc-400 hover:text-white'}" do %>
+    <%= link_to root_path, class: "flex flex-col items-center py-1 px-2.5 rounded-xl transition duration-150 #{is_home ? 'text-purple-400' : 'text-zinc-400 hover:text-white'}" do %>
       <div class="relative">
         <svg class="w-5 h-5 #{is_home ? 'text-purple-400' : 'text-zinc-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -204,6 +213,19 @@
         <% end %>
       </div>
       <span class="text-[10px] font-semibold mt-1">Ana Sayfa</span>
+    <% end %>
+
+    <!-- Diziler -->
+    <%= link_to tv_shows_path, class: "flex flex-col items-center py-1 px-2.5 rounded-xl transition duration-150 #{is_tv_m ? 'text-purple-400' : 'text-zinc-400 hover:text-white'}" do %>
+      <div class="relative">
+        <svg class="w-5 h-5 #{is_tv_m ? 'text-purple-400' : 'text-zinc-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <% if is_tv_m %>
+          <span class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+        <% end %>
+      </div>
+      <span class="text-[10px] font-semibold mt-1">Diziler</span>
     <% end %>
 
     <!-- Katalog -->

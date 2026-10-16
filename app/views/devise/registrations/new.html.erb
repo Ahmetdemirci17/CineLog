@@ -1,3 +1,13 @@
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+<script>
+  window.addEventListener("pageshow", function(event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+</script>
 <div class="min-h-[70vh] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-6 bg-[#15161c] p-7 sm:p-9 rounded-2xl border border-[#262833] shadow-md">
     <div class="text-center">

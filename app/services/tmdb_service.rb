@@ -23,6 +23,41 @@ class TmdbService
     end
   end
 
+  # Trending TV Shows
+  def trending_tv(time_window: "week", page: 1, language: "tr-TR")
+    fetch_with_cache("trending/tv/#{time_window}", { page: page, language: language }) do
+      fallback_popular_tv
+    end
+  end
+
+  # Top Rated TV Shows
+  def top_rated_tv(page: 1, language: "tr-TR")
+    fetch_with_cache("tv/top_rated", { page: page, language: language }) do
+      fallback_popular_tv
+    end
+  end
+
+  # Discover TV Shows by Genre ID
+  def discover_tv_by_genre(genre_id, page: 1, sort_by: "vote_average.desc", language: "tr-TR")
+    params = {
+      with_genres: genre_id,
+      sort_by: sort_by,
+      "vote_count.gte" => 200,
+      page: page,
+      language: language
+    }
+
+    res = fetch_with_cache("discover/tv", params) do
+      fallback_popular_tv
+    end
+
+    if res.is_a?(Hash) && res["results"].is_a?(Array)
+      res["results"].each { |item| item["media_type"] ||= "tv" }
+    end
+
+    res
+  end
+
   # Trending Content (movies + tv)
   def trending(time_window: "week", page: 1, language: "tr-TR")
     fetch_with_cache("trending/all/#{time_window}", { page: page, language: language }) do

@@ -1,4 +1,6 @@
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  skip_before_action :verify_authenticity_token, only: :failure
+
   def google_oauth2
     @user = User.from_omniauth(request.env['omniauth.auth'])
 
@@ -12,6 +14,10 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def failure
-    redirect_to root_path, alert: "Google ile giriş yapılırken bir hata oluştu veya işlem iptal edildi."
+    if user_signed_in?
+      redirect_to root_path, notice: "Oturumunuz zaten açık."
+    else
+      redirect_to root_path, alert: "Google ile giriş yapılırken bir hata oluştu veya işlem iptal edildi."
+    end
   end
 end

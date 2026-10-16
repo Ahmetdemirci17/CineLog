@@ -4,8 +4,21 @@ class WatchlistsController < ApplicationController
 
   def index
     @active_tab = params[:tab].presence || "plan_to_watch"
-    @plan_to_watch_items = current_user.watchlists.plan_to_watch
-    @watched_items = current_user.watchlists.watched
+    @media_filter = %w[movie tv].include?(params[:media_type]) ? params[:media_type] : "all"
+
+    base_plan = current_user.watchlists.plan_to_watch
+    base_watched = current_user.watchlists.watched
+
+    @plan_to_watch_total = base_plan.count
+    @plan_to_watch_movies_count = base_plan.where(media_type: "movie").count
+    @plan_to_watch_tv_count = base_plan.where(media_type: "tv").count
+
+    @watched_total = base_watched.count
+    @watched_movies_count = base_watched.where(media_type: "movie").count
+    @watched_tv_count = base_watched.where(media_type: "tv").count
+
+    @plan_to_watch_items = @media_filter == "all" ? base_plan : base_plan.where(media_type: @media_filter)
+    @watched_items = @media_filter == "all" ? base_watched : base_watched.where(media_type: @media_filter)
     @user_watchlist_map = current_user.watchlists.index_by { |w| [w.tmdb_id, w.media_type] }
     @stats = Watchlist.stats_for(current_user)
 
@@ -14,13 +27,16 @@ class WatchlistsController < ApplicationController
       all_user_ids = current_user.watchlists.pluck(:tmdb_id).to_set
 
       if params[:source_id].present? && params[:source_id] != "all"
-        @source_item = @watched_items.find_by(tmdb_id: params[:source_id])
+        @source_item = base_watched.find_by(tmdb_id: params[:source_id])
         if @source_item
           @source_id = @source_item.tmdb_id
           @source_title = @source_item.title
           res = @source_item.media_type == "tv" ? service.tv_recommendations(@source_item.tmdb_id) : service.movie_recommendations(@source_item.tmdb_id)
           items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
-          items.each { |item| item["_recommended_by"] = @source_item.title }
+          items.each do |item|
+            item["_recommended_by"] = @source_item.title
+            item["media_type"] ||= @source_item.media_type
+          end
           @recommendations = items.first(30)
         else
           @recommendations = []
@@ -28,7 +44,7 @@ class WatchlistsController < ApplicationController
       else
         # Default or "all" -> Tüm İzlediklerimden Karma (Interleaved diverse blend across watched library)
         @source_id = "all"
-        @source_title = "Tüm İzlediklerim (Karma)"
+        @source_title = @media_filter == "tv" ? "İzlediğim Dizilerden (Karma)" : (@media_filter == "movie" ? "İzlediğim Filmlerden (Karma)" : "Tüm İzlediklerim (Karma)")
 
         if @watched_items.any?
           all_watched_array = @watched_items.to_a
@@ -43,7 +59,10 @@ class WatchlistsController < ApplicationController
           sources.each do |src|
             res = src.media_type == "tv" ? service.tv_recommendations(src.tmdb_id) : service.movie_recommendations(src.tmdb_id)
             items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
-            items.each { |item| item["_recommended_by"] = src.title }
+            items.each do |item|
+              item["_recommended_by"] = src.title
+              item["media_type"] ||= src.media_type
+            end
             per_source_items[src.id] = items
           end
 

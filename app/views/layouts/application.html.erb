@@ -67,5 +67,7 @@
         <p class="text-zinc-500">&copy; <%= Date.current.year %> CineLog. Tüm hakları saklıdır.</p>
       </div>
     </footer>
+
+    <%= render "shared/rating_modal" if user_signed_in? %>
   </body>
 </html>

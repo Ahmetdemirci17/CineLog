@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   root "movies#index"
 
   resources :movies, only: [:index, :show]
-  resources :tv_shows, only: [:show], path: "tv"
+  resources :tv_shows, only: [:index, :show], path: "tv"
   get "search", to: "movies#search", as: :search
   get "search/suggestions", to: "movies#suggestions", as: :search_suggestions
   resources :genres, only: [:index, :show], path: "katalog"
