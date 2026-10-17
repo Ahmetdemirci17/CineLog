@@ -3,8 +3,18 @@
   <head>
     <title><%= content_for(:title) || "CineLog — Film & Dizi Takip ve Topluluk" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CineLog">
     <meta name="application-name" content="CineLog">
+    <meta name="theme-color" content="#0a0a0c">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -69,5 +79,14 @@
     </footer>
 
     <%= render "shared/rating_modal" if user_signed_in? %>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .catch(err => console.log('PWA ServiceWorker error:', err));
+        });
+      }
+    </script>
   </body>
 </html>
