@@ -5,15 +5,15 @@
 
   <div class="p-6 sm:p-8 rounded-3xl bg-[#15161c] border border-[#262833] shadow-md space-y-6">
     <div class="flex items-start justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-[#272236] border border-[#a78bfa]/25 flex items-center justify-center text-xs font-bold text-[#a78bfa]">
+      <%= link_to user_profile_path(@community_post.user.username), class: "flex items-center gap-3 hover:opacity-85 transition group/author" do %>
+        <div class="w-9 h-9 rounded-xl bg-[#272236] border border-[#a78bfa]/25 flex items-center justify-center text-xs font-bold text-[#a78bfa] group-hover/author:border-purple-400">
           <%= @community_post.user.username[0].upcase %>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-[#f1f3f7]"><%= @community_post.user.username %></h3>
+          <h3 class="text-sm font-bold text-[#f1f3f7] group-hover/author:text-purple-300 transition"><%= @community_post.user.username %></h3>
           <p class="text-xs text-[#686d80]"><%= time_ago_in_words(@community_post.created_at) %> önce paylaşıldı</p>
         </div>
-      </div>
+      <% end %>
 
       <% if user_signed_in? && @community_post.user == current_user %>
         <%= button_to community_post_path(@community_post), method: :delete, data: { turbo_confirm: "Bu konuyu silmek istediğinize emin misiniz?" }, class: "text-xs text-[#8b90a0] hover:text-red-400 transition flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1c1d25] border border-[#262833] cursor-pointer" do %>

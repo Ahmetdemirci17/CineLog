@@ -40,15 +40,15 @@
             
             <!-- Author Header & Media Badge -->
             <div class="flex items-center justify-between gap-3 flex-wrap">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-900/60 to-purple-600/30 border border-purple-500/30 flex items-center justify-center text-xs font-black text-purple-300 shadow-sm">
+              <%= link_to user_profile_path(post.user.username), class: "flex items-center gap-3 hover:opacity-85 transition group/author" do %>
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-900/60 to-purple-600/30 border border-purple-500/30 flex items-center justify-center text-xs font-black text-purple-300 shadow-sm group-hover/author:border-purple-400">
                   <%= post.user.username[0].upcase %>
                 </div>
                 <div>
-                  <span class="text-xs font-bold text-zinc-200 group-hover:text-white transition"><%= post.user.username %></span>
+                  <span class="text-xs font-bold text-zinc-200 group-hover/author:text-purple-300 transition"><%= post.user.username %></span>
                   <span class="text-[11px] text-zinc-500 ml-2">• <%= time_ago_in_words(post.created_at) %> önce</span>
                 </div>
-              </div>
+              <% end %>
 
               <% if post.tmdb_id.present? %>
                 <% media_url = post.media_type == 'tv' ? tv_show_path(post.tmdb_id) : movie_path(post.tmdb_id) %>

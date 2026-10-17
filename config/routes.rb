@@ -16,6 +16,9 @@ Rails.application.routes.draw do
     resources :community_replies, only: [:create, :destroy], path: "replies"
   end
 
+  get "u/:username", to: "profiles#show", as: :user_profile
+  get "profil/:username", to: "profiles#show", as: :profile
+
   namespace :admin do
     root to: "dashboard#index"
     resources :users, only: [:index, :show, :destroy] do

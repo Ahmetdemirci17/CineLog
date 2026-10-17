@@ -1,0 +1,293 @@
+<% content_for :title, "#{@user.username} — Sinema Günlüğü ve Profili — CineLog" %>
+
+<div class="space-y-8">
+  <!-- Profile Hero Header -->
+  <div class="relative p-6 sm:p-8 lg:p-10 rounded-3xl bg-gradient-to-b from-[#161424] to-[#101016] border border-purple-500/20 shadow-2xl overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex items-center gap-5 sm:gap-6">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-purple-600 to-purple-900 border-2 border-purple-400/40 flex items-center justify-center text-3xl sm:text-4xl font-black text-white shadow-[0_0_30px_rgba(168,85,247,0.35)] shrink-0">
+          <%= @user.username[0].upcase %>
+        </div>
+        <div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight"><%= @user.username %></h1>
+            <% if @user.admin? %>
+              <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">Yönetici</span>
+            <% end %>
+            <% if user_signed_in? && current_user == @user %>
+              <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">Profiliniz</span>
+            <% end %>
+          </div>
+          <p class="text-xs sm:text-sm text-zinc-400 mt-1 flex items-center gap-2">
+            <span>📅 <%= @user.created_at.strftime("%B %Y") %> tarihinden beri üye</span>
+            <span>•</span>
+            <span>🎬 <%= @user.watchlists.count %> Kayıt</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action / Taste Match Badge -->
+      <% if user_signed_in? && current_user != @user && @taste_match_score.present? %>
+        <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600/15 border border-purple-500/30 backdrop-blur-sm self-start md:self-auto shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+          <div class="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center text-xl shrink-0">
+            🎯
+          </div>
+          <div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-xs font-semibold text-zinc-300">Zevk Uyumu:</span>
+              <span class="text-lg font-black text-purple-300">%<%= @taste_match_score %></span>
+            </div>
+            <p class="text-[11px] text-zinc-400"><%= @common_movies.size %> ortak yapım puanladınız</p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Quick Stats Bar (Letterboxd Style) -->
+    <% if @stats.present? %>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-zinc-800/80 text-center sm:text-left">
+        <div class="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/60">
+          <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">İzlenen Toplam</span>
+          <div class="flex items-baseline justify-center sm:justify-start gap-1.5">
+            <span class="text-2xl font-black text-white"><%= @stats[:total_watched] %></span>
+            <span class="text-xs text-zinc-400">(<%= @stats[:movies_count] %> Film, <%= @stats[:tv_count] %> Dizi)</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/60">
+          <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">İzleme Süresi</span>
+          <div class="flex items-baseline justify-center sm:justify-start gap-1">
+            <% if @stats[:days] > 0 %>
+              <span class="text-2xl font-black text-white"><%= @stats[:days] %></span>
+              <span class="text-xs text-zinc-400">gün</span>
+            <% end %>
+            <span class="text-2xl font-black text-white ml-1"><%= @stats[:remaining_hours] %></span>
+            <span class="text-xs text-zinc-400">saat</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/60">
+          <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">Ortalama Puanı</span>
+          <div class="flex items-baseline justify-center sm:justify-start gap-1">
+            <span class="text-2xl font-black text-amber-400">★ <%= @stats[:avg_rating] || "—" %></span>
+            <span class="text-xs text-zinc-400">/ 10</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/60">
+          <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">Favori Türü</span>
+          <div class="text-sm font-bold text-purple-300 truncate mt-1">
+            <%= @stats[:top_genres].first ? @stats[:top_genres].first[:name] : "Henüz yok" %>
+            <% if @stats[:top_genres].first %>
+              <span class="text-xs font-normal text-zinc-400">(%<%= @stats[:top_genres].first[:percentage] %>)</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Common Movies Comparison Section (if taste match available) -->
+  <% if user_signed_in? && current_user != @user && @common_movies.any? %>
+    <div class="p-6 rounded-2xl bg-[#121217]/90 border border-purple-500/20 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="text-base">🤝</span>
+          <h2 class="text-sm sm:text-base font-bold text-white">İkinizin de İzlediği ve Puanladığı Filmler</h2>
+          <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-600/20 text-purple-300 border border-purple-500/30"><%= @common_movies.size %></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <% @common_movies.first(6).each do |cm| %>
+          <% w = cm[:watchlist] %>
+          <% media_link = w.media_type == 'tv' ? tv_show_path(w.tmdb_id) : movie_path(w.tmdb_id) %>
+          <div class="group relative rounded-xl bg-zinc-900/60 border border-zinc-800 p-2 flex flex-col items-center text-center">
+            <%= link_to media_link, class: "block w-full" do %>
+              <% if w.poster_path.present? %>
+                <img src="https://image.tmdb.org/t/p/w185<%= w.poster_path %>" alt="<%= w.title %>" class="w-full aspect-[2/3] object-cover rounded-lg group-hover:opacity-90 transition shadow" />
+              <% else %>
+                <div class="w-full aspect-[2/3] rounded-lg bg-zinc-800 flex items-center justify-center text-xs text-zinc-500">🎬</div>
+              <% end %>
+            <% end %>
+            <span class="text-xs font-semibold text-white truncate w-full mt-2 block"><%= w.title %></span>
+            <div class="flex items-center justify-between w-full text-[11px] mt-1 pt-1 border-t border-zinc-800/80">
+              <span class="text-purple-400" title="Senin Puanın">Sen: ★<%= cm[:my_rating] %></span>
+              <span class="text-amber-400" title="<%= @user.username %> Puanı">O: ★<%= cm[:their_rating] %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Favorite Top Picks (Ratings >= 9) -->
+  <% if @favorites.any? && @current_tab == 'watched' %>
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-lg">⭐</span>
+        <h2 class="text-lg font-bold text-white"><%= @user.username %> — Başyapıtları & Favorileri (★9-10)</h2>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <% @favorites.each do |fav| %>
+          <% media_link = fav.media_type == 'tv' ? tv_show_path(fav.tmdb_id) : movie_path(fav.tmdb_id) %>
+          <%= link_to media_link, class: "group relative rounded-2xl overflow-hidden bg-zinc-900 border border-purple-500/20 hover:border-purple-400/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.25)] transition duration-200 block" do %>
+            <% if fav.poster_path.present? %>
+              <img src="https://image.tmdb.org/t/p/w342<%= fav.poster_path %>" alt="<%= fav.title %>" class="w-full aspect-[2/3] object-cover group-hover:scale-105 transition duration-300" />
+            <% else %>
+              <div class="w-full aspect-[2/3] bg-zinc-800 flex items-center justify-center text-zinc-500">🎬</div>
+            <% end %>
+            <div class="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/80 backdrop-blur-md text-amber-400 text-xs font-black shadow border border-amber-400/30">
+              ★ <%= fav.user_rating %>
+            </div>
+            <div class="p-2.5 bg-[#121217]">
+              <span class="text-xs font-bold text-white group-hover:text-purple-300 transition truncate block"><%= fav.title %></span>
+              <span class="text-[10px] text-zinc-400 block"><%= fav.media_type == 'movie' ? 'Film' : 'Dizi' %></span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Tabs Navigation & Filter Bar -->
+  <div class="p-3 sm:p-4 rounded-2xl bg-[#121217] border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Main Tabs -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+      <%= link_to user_profile_path(@user.username, tab: "watched", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'watched' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
+        <span>İzledikleri</span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'watched' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.watchlists.watched.count %></span>
+      <% end %>
+
+      <%= link_to user_profile_path(@user.username, tab: "plan_to_watch", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'plan_to_watch' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
+        <span>İzleyecekleri</span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'plan_to_watch' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.watchlists.plan_to_watch.count %></span>
+      <% end %>
+
+      <%= link_to user_profile_path(@user.username, tab: "favorites", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'favorites' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
+        <span>Puanladıkları</span>
+      <% end %>
+
+      <%= link_to user_profile_path(@user.username, tab: "community"), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'community' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
+        <span>Paylaşımları</span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'community' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.community_posts.count %></span>
+      <% end %>
+    </div>
+
+    <!-- Media Type Subfilter -->
+    <% if @current_tab != 'community' %>
+      <div class="flex items-center gap-1.5 text-xs self-start sm:self-auto">
+        <span class="text-zinc-500 mr-1">Filtrele:</span>
+        <%= link_to "Tümü", user_profile_path(@user.username, tab: @current_tab), class: "px-2.5 py-1 rounded-lg #{params[:media_type].blank? ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+        <%= link_to "Filmler", user_profile_path(@user.username, tab: @current_tab, media_type: "movie"), class: "px-2.5 py-1 rounded-lg #{params[:media_type] == 'movie' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+        <%= link_to "Diziler", user_profile_path(@user.username, tab: @current_tab, media_type: "tv"), class: "px-2.5 py-1 rounded-lg #{params[:media_type] == 'tv' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Content Section -->
+  <% if @current_tab == 'community' %>
+    <!-- User's Community Posts Feed -->
+    <div class="space-y-4">
+      <% if @posts.any? %>
+        <% @posts.each do |post| %>
+          <article class="p-6 rounded-2xl bg-[#121217] border border-zinc-800/80 hover:border-purple-500/40 transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-zinc-400"><%= post.created_at.strftime("%d.%m.%Y") %> (<%= time_ago_in_words(post.created_at) %> önce)</span>
+              <% if post.media_type.present? %>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-400">
+                  <%= post.media_type == 'tv' ? '📺 Dizi' : '🎬 Film' %>
+                </span>
+              <% end %>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">
+              <%= link_to post.title, community_post_path(post), class: "hover:text-purple-400 transition" %>
+            </h3>
+            <p class="text-xs sm:text-sm text-zinc-300 line-clamp-3 leading-relaxed mb-4"><%= post.content %></p>
+            <div class="flex items-center justify-between text-xs text-zinc-500 pt-3 border-t border-zinc-800/60">
+              <span>💬 <%= post.community_replies.size %> Yanıt</span>
+              <%= link_to "Konuyu Oku →", community_post_path(post), class: "text-purple-400 hover:text-purple-300 font-semibold" %>
+            </div>
+          </article>
+        <% end %>
+      <% else %>
+        <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800">
+          <p class="text-sm text-zinc-400"><%= @user.username %> henüz toplulukta bir konu açmamış.</p>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <!-- Watchlist Grid -->
+    <% if @watchlists.present? && @watchlists.any? %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+        <% @watchlists.each do |item| %>
+          <% media_link = item.media_type == 'tv' ? tv_show_path(item.tmdb_id) : movie_path(item.tmdb_id) %>
+          <div class="group flex flex-col rounded-2xl bg-[#121217] border border-zinc-800/80 hover:border-purple-500/40 hover:shadow-[0_8px_30px_rgba(147,51,234,0.15)] transition duration-200 overflow-hidden">
+            <!-- Poster Container -->
+            <div class="relative aspect-[2/3] w-full bg-zinc-900 overflow-hidden">
+              <%= link_to media_link, class: "block w-full h-full" do %>
+                <% if item.poster_path.present? %>
+                  <img src="https://image.tmdb.org/t/p/w342<%= item.poster_path %>" alt="<%= item.title %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                <% else %>
+                  <div class="w-full h-full flex items-center justify-center text-zinc-600 text-3xl">🎬</div>
+                <% end %>
+              <% end %>
+
+              <!-- Media Type Badge -->
+              <div class="absolute top-2 left-2">
+                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow <%= item.media_type == 'movie' ? 'bg-indigo-600/80 text-white' : 'bg-cyan-600/80 text-white' %>">
+                  <%= item.media_type == 'movie' ? 'Film' : 'Dizi' %>
+                </span>
+              </div>
+
+              <!-- Rating Badge (if rated) -->
+              <% if item.user_rating.present? %>
+                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/85 backdrop-blur-md text-amber-400 text-xs font-black shadow border border-amber-400/40 flex items-center gap-1">
+                  <span>★</span>
+                  <span><%= item.user_rating %></span>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-2">
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-white group-hover:text-purple-300 transition line-clamp-1">
+                  <%= link_to item.title, media_link %>
+                </h4>
+                <% if item.genres.present? %>
+                  <p class="text-[11px] text-zinc-400 line-clamp-1 mt-0.5"><%= item.genres %></p>
+                <% end %>
+              </div>
+
+              <div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+                <% if item.status == 1 %>
+                  <span class="text-emerald-400 flex items-center gap-1 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> İzlendi
+                  </span>
+                  <% if item.watched_at.present? %>
+                    <span><%= item.watched_at.strftime("%d.%m.%y") %></span>
+                  <% end %>
+                <% else %>
+                  <span class="text-amber-400 flex items-center gap-1 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> İzlenecek
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800 p-8">
+        <div class="text-3xl mb-3">🎬</div>
+        <h3 class="text-base font-bold text-white">Bu sekmede henüz içerik yok</h3>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto mt-1">
+          <%= @user.username %> bu kategoriye henüz bir yapım eklememiş.
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>
