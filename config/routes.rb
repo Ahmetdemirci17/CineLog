@@ -16,5 +16,18 @@ Rails.application.routes.draw do
     resources :community_replies, only: [:create, :destroy], path: "replies"
   end
 
+  namespace :admin do
+    root to: "dashboard#index"
+    resources :users, only: [:index, :show, :destroy] do
+      member do
+        patch :toggle_admin
+      end
+    end
+    resources :community_posts, only: [:index, :show, :destroy] do
+      resources :community_replies, only: [:destroy]
+    end
+    resources :watchlists, only: [:index, :destroy]
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
 end

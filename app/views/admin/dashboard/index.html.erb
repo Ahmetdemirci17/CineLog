@@ -1,0 +1,229 @@
+<% content_for :title, "Yönetici Paneli — CineLog" %>
+
+<%= render "admin/shared/header" %>
+
+<!-- Metric Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <!-- Card 1: Users -->
+  <div class="p-5 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 hover:border-purple-500/30 transition shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Kullanıcılar</span>
+      <div class="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-black text-white"><%= @total_users %></span>
+      <span class="text-xs text-zinc-400">(<%= @admin_users %> yönetici)</span>
+    </div>
+    <div class="mt-3 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400">
+      <%= link_to "Kullanıcıları Yönet →", admin_users_path, class: "text-purple-400 hover:text-purple-300 font-medium" %>
+    </div>
+  </div>
+
+  <!-- Card 2: Watchlists -->
+  <div class="p-5 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 hover:border-purple-500/30 transition shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">İzleme Kayıtları</span>
+      <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-black text-white"><%= @total_watchlists %></span>
+      <span class="text-xs text-zinc-400">toplam kayıt</span>
+    </div>
+    <div class="mt-3 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400">
+      <span><%= @watched_count %> İzlendi</span>
+      <span><%= @plan_to_watch_count %> İzlenecek</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Community Posts -->
+  <div class="p-5 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 hover:border-purple-500/30 transition shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Topluluk Gönderileri</span>
+      <div class="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-black text-white"><%= @total_posts %></span>
+      <span class="text-xs text-zinc-400">paylaşım</span>
+    </div>
+    <div class="mt-3 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400">
+      <%= link_to "Gönderileri İncele →", admin_community_posts_path, class: "text-purple-400 hover:text-purple-300 font-medium" %>
+    </div>
+  </div>
+
+  <!-- Card 4: Replies -->
+  <div class="p-5 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 hover:border-purple-500/30 transition shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Topluluk Yanıtları</span>
+      <div class="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-black text-white"><%= @total_replies %></span>
+      <span class="text-xs text-zinc-400">yorum</span>
+    </div>
+    <div class="mt-3 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-400">
+      <span class="text-zinc-500">Etkileşim oranı aktif</span>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity Split Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+  <!-- Recent Users -->
+  <div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-white">Son Kaydolan Kullanıcılar</h2>
+        <span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= @recent_users.size %></span>
+      </div>
+      <%= link_to "Tümünü Gör", admin_users_path, class: "text-xs font-semibold text-purple-400 hover:text-purple-300" %>
+    </div>
+
+    <div class="space-y-3">
+      <% @recent_users.each do |user| %>
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700/60 transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-700 to-purple-900 border border-purple-500/30 flex items-center justify-center text-xs font-black text-white shrink-0">
+              <%= user.username[0].upcase %>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <%= link_to user.username, admin_user_path(user), class: "text-sm font-semibold text-white hover:text-purple-400 transition truncate" %>
+                <% if user.admin? %>
+                  <span class="px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Admin</span>
+                <% end %>
+                <% if user.provider == 'google_oauth2' %>
+                  <span class="px-1.5 py-0.2 text-[9px] font-semibold rounded bg-zinc-800 text-zinc-400">Google</span>
+                <% end %>
+              </div>
+              <p class="text-xs text-zinc-400 truncate"><%= user.email %></p>
+            </div>
+          </div>
+          <div class="text-right shrink-0 pl-3">
+            <span class="text-xs text-zinc-400"><%= time_ago_in_words(user.created_at) %> önce</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Recent Community Posts -->
+  <div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-white">Son Topluluk Gönderileri</h2>
+        <span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= @recent_posts.size %></span>
+      </div>
+      <%= link_to "Tümünü Gör", admin_community_posts_path, class: "text-xs font-semibold text-purple-400 hover:text-purple-300" %>
+    </div>
+
+    <div class="space-y-3">
+      <% if @recent_posts.any? %>
+        <% @recent_posts.each do |post| %>
+          <div class="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700/60 transition flex items-center justify-between gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-medium text-purple-400"><%= post.user.username %></span>
+                <span class="text-zinc-600">•</span>
+                <span class="text-xs text-zinc-400"><%= time_ago_in_words(post.created_at) %> önce</span>
+              </div>
+              <h3 class="text-sm font-semibold text-white truncate"><%= post.title %></h3>
+              <p class="text-xs text-zinc-400 line-clamp-1 mt-0.5"><%= post.content %></p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <%= link_to admin_community_post_path(post), class: "p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs transition", title: "Detay" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              <% end %>
+              <%= button_to admin_community_post_path(post), method: :delete, data: { turbo_confirm: "Bu gönderiyi silmek istediğinizden emin misiniz?" }, class: "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition cursor-pointer", title: "Sil" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-xs text-zinc-500 text-center py-6">Henüz topluluk gönderisi bulunmuyor.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Watchlist Additions -->
+<div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80">
+  <div class="flex items-center justify-between mb-5">
+    <div class="flex items-center gap-2">
+      <h2 class="text-base font-bold text-white">Son Eklenen İzleme Kayıtları</h2>
+      <span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= @recent_watchlists.size %></span>
+    </div>
+    <%= link_to "Tümünü Gör", admin_watchlists_path, class: "text-xs font-semibold text-purple-400 hover:text-purple-300" %>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs">
+      <thead>
+        <tr class="border-b border-zinc-800 text-zinc-400">
+          <th class="pb-3 font-semibold">Başlık</th>
+          <th class="pb-3 font-semibold">Tür</th>
+          <th class="pb-3 font-semibold">Kullanıcı</th>
+          <th class="pb-3 font-semibold">Durum</th>
+          <th class="pb-3 font-semibold">Puan</th>
+          <th class="pb-3 font-semibold">Eklenme Tarihi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/60">
+        <% @recent_watchlists.each do |w| %>
+          <tr class="hover:bg-zinc-900/40 transition">
+            <td class="py-3 font-medium text-white flex items-center gap-2.5">
+              <% if w.poster_path.present? %>
+                <img src="https://image.tmdb.org/t/p/w92<%= w.poster_path %>" alt="" class="w-7 h-10 object-cover rounded shadow" />
+              <% else %>
+                <div class="w-7 h-10 rounded bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500">🎬</div>
+              <% end %>
+              <span><%= w.title %></span>
+            </td>
+            <td class="py-3 text-zinc-300">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold <%= w.media_type == 'movie' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-cyan-500/20 text-cyan-300' %>">
+                <%= w.media_type == 'movie' ? 'Film' : 'Dizi' %>
+              </span>
+            </td>
+            <td class="py-3 text-purple-400">
+              <%= link_to w.user.username, admin_user_path(w.user), class: "hover:underline" %>
+            </td>
+            <td class="py-3">
+              <% if w.status == 1 %>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">İzlendi</span>
+              <% else %>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">İzlenecek</span>
+              <% end %>
+            </td>
+            <td class="py-3 text-zinc-300">
+              <%= w.user_rating.present? ? "★ #{w.user_rating}/10" : "—" %>
+            </td>
+            <td class="py-3 text-zinc-400">
+              <%= time_ago_in_words(w.created_at) %> önce
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

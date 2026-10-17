@@ -9,6 +9,8 @@ class User < ApplicationRecord
   has_many :community_posts, dependent: :destroy
   has_many :community_replies, dependent: :destroy
 
+  scope :admins, -> { where(admin: true) }
+
   validates :username, presence: true, uniqueness: { case_sensitive: false },
                        format: { with: /\A[a-zA-Z0-9_]+\z/, message: "only letters, numbers, and underscores allowed" },
                        length: { minimum: 3, maximum: 30 }

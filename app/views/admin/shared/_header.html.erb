@@ -1,0 +1,68 @@
+<div class="mb-8">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800/80">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600/30 to-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">Yönetici Paneli</h1>
+          <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Admin</span>
+        </div>
+        <p class="text-xs text-zinc-400 mt-0.5">Sistem durumu, kullanıcı yönetimi, içerik moderasyonu ve izleme verileri.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <%= link_to root_path, class: "px-3.5 py-2 rounded-xl text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition flex items-center gap-1.5" do %>
+        <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Siteye Dön</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Sub Navigation Tabs -->
+  <%
+    current = request.path
+    tab_dash = (current == admin_root_path)
+    tab_users = current.start_with?(admin_users_path)
+    tab_posts = current.start_with?(admin_community_posts_path)
+    tab_watch = current.start_with?(admin_watchlists_path)
+  %>
+  <div class="flex items-center gap-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
+    <%= link_to admin_root_path, class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{tab_dash ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'}" do %>
+      <svg class="w-4 h-4 #{tab_dash ? 'text-purple-400' : 'text-zinc-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+      <span>Genel Bakış</span>
+    <% end %>
+
+    <%= link_to admin_users_path, class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{tab_users ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'}" do %>
+      <svg class="w-4 h-4 #{tab_users ? 'text-purple-400' : 'text-zinc-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <span>Kullanıcılar</span>
+      <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= User.count %></span>
+    <% end %>
+
+    <%= link_to admin_community_posts_path, class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{tab_posts ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'}" do %>
+      <svg class="w-4 h-4 #{tab_posts ? 'text-purple-400' : 'text-zinc-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+      </svg>
+      <span>Topluluk & Moderasyon</span>
+      <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= CommunityPost.count %></span>
+    <% end %>
+
+    <%= link_to admin_watchlists_path, class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{tab_watch ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'}" do %>
+      <svg class="w-4 h-4 #{tab_watch ? 'text-purple-400' : 'text-zinc-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+      </svg>
+      <span>İzleme Kayıtları</span>
+      <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-zinc-800 text-zinc-300"><%= Watchlist.count %></span>
+    <% end %>
+  </div>
+</div>

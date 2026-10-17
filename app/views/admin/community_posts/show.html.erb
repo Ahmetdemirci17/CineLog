@@ -1,0 +1,68 @@
+<% content_for :title, "#{@post.title} — Gönderi Moderasyonu" %>
+
+<%= render "admin/shared/header" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <%= link_to "← Topluluk Gönderilerine Dön", admin_community_posts_path, class: "text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center gap-1.5" %>
+
+  <%= button_to admin_community_post_path(@post), method: :delete, data: { turbo_confirm: "Bu gönderiyi ve tüm yanıtlarını kalıcı olarak silmek istediğinizden emin misiniz?" }, class: "px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition cursor-pointer flex items-center gap-1.5" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+    <span>Gönderiyi Sil</span>
+  <% end %>
+</div>
+
+<!-- Main Post Card -->
+<div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 mb-8">
+  <div class="flex items-center gap-3 mb-4 pb-4 border-b border-zinc-800">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-700 to-purple-900 border border-purple-500/30 flex items-center justify-center text-sm font-black text-white shrink-0">
+      <%= @post.user.username[0].upcase %>
+    </div>
+    <div>
+      <div class="flex items-center gap-2">
+        <%= link_to @post.user.username, admin_user_path(@post.user), class: "text-sm font-bold text-white hover:text-purple-400 transition" %>
+        <% if @post.user.admin? %>
+          <span class="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-purple-500/20 text-purple-300">Admin</span>
+        <% end %>
+      </div>
+      <p class="text-xs text-zinc-500"><%= @post.created_at.strftime("%d.%m.%Y %H:%M") %> (<%= time_ago_in_words(@post.created_at) %> önce)</p>
+    </div>
+  </div>
+
+  <h1 class="text-xl font-bold text-white mb-3"><%= @post.title %></h1>
+  <div class="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap"><%= @post.content %></div>
+</div>
+
+<!-- Replies Section -->
+<div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-base font-bold text-white">Yanıtlar</h2>
+    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-zinc-800 text-zinc-300"><%= @replies.size %></span>
+  </div>
+
+  <div class="space-y-3">
+    <% if @replies.any? %>
+      <% @replies.each do |reply| %>
+        <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/60 flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <%= link_to reply.user.username, admin_user_path(reply.user), class: "text-xs font-semibold text-purple-400 hover:underline" %>
+              <span class="text-zinc-600">•</span>
+              <span class="text-[11px] text-zinc-500"><%= time_ago_in_words(reply.created_at) %> önce</span>
+            </div>
+            <p class="text-xs sm:text-sm text-zinc-300 whitespace-pre-wrap"><%= reply.content %></p>
+          </div>
+
+          <%= button_to admin_community_post_community_reply_path(@post, reply), method: :delete, data: { turbo_confirm: "Bu yanıtı silmek istediğinizden emin misiniz?" }, class: "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition cursor-pointer shrink-0", title: "Yanıtı Sil" do %>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-xs text-zinc-500 text-center py-6">Bu gönderiye henüz yanıt verilmemiş.</p>
+    <% end %>
+  </div>
+</div>

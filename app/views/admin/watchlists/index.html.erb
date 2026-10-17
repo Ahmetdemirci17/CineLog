@@ -1,0 +1,119 @@
+<% content_for :title, "İzleme Kayıtları — Yönetici Paneli" %>
+
+<%= render "admin/shared/header" %>
+
+<!-- Filters & Search Bar -->
+<div class="p-4 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+  <%= form_with url: admin_watchlists_path, method: :get, class: "flex items-center gap-2 flex-1 max-w-md", data: { turbo_frame: "_top" } do |f| %>
+    <%= f.hidden_field :media_type, value: params[:media_type] if params[:media_type].present? %>
+    <%= f.hidden_field :status, value: params[:status] if params[:status].present? %>
+    <div class="relative flex-1">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <%= f.text_field :query, value: params[:query], placeholder: "Film veya dizi adı ara...", class: "w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500" %>
+    </div>
+    <%= f.submit "Ara", class: "px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-xl cursor-pointer transition" %>
+    <% if params[:query].present? || params[:media_type].present? || params[:status].present? %>
+      <%= link_to "Sıfırla", admin_watchlists_path, class: "px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-xl transition" %>
+    <% end %>
+  <% end %>
+
+  <div class="flex flex-wrap items-center gap-3 text-xs">
+    <div class="flex items-center gap-1.5">
+      <span class="text-zinc-500">Format:</span>
+      <%= link_to "Tümü", admin_watchlists_path(status: params[:status], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:media_type].blank? ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+      <%= link_to "Film", admin_watchlists_path(media_type: "movie", status: params[:status], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:media_type] == 'movie' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+      <%= link_to "Dizi", admin_watchlists_path(media_type: "tv", status: params[:status], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:media_type] == 'tv' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+    </div>
+
+    <div class="flex items-center gap-1.5 pl-3 border-l border-zinc-800">
+      <span class="text-zinc-500">Durum:</span>
+      <%= link_to "Tümü", admin_watchlists_path(media_type: params[:media_type], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:status].blank? ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+      <%= link_to "İzlendi", admin_watchlists_path(status: "1", media_type: params[:media_type], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:status] == '1' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+      <%= link_to "İzlenecek", admin_watchlists_path(status: "0", media_type: params[:media_type], query: params[:query]), class: "px-2.5 py-1 rounded-lg #{params[:status] == '0' ? 'bg-purple-600/20 text-purple-300 font-bold' : 'text-zinc-400 hover:text-white'}" %>
+    </div>
+  </div>
+</div>
+
+<!-- Watchlists Table -->
+<div class="p-6 rounded-2xl bg-[#121217]/80 border border-zinc-800/80 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs">
+      <thead>
+        <tr class="border-b border-zinc-800 text-zinc-400">
+          <th class="pb-3 font-semibold">Film / Dizi</th>
+          <th class="pb-3 font-semibold">Tür</th>
+          <th class="pb-3 font-semibold">Kullanıcı</th>
+          <th class="pb-3 font-semibold">Durum</th>
+          <th class="pb-3 font-semibold">Puan</th>
+          <th class="pb-3 font-semibold">İzlenme Tarihi</th>
+          <th class="pb-3 font-semibold">Eklenme</th>
+          <th class="pb-3 font-semibold text-right">İşlem</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/60">
+        <% if @watchlists.any? %>
+          <% @watchlists.each do |w| %>
+            <tr class="hover:bg-zinc-900/40 transition">
+              <td class="py-3 font-medium text-white">
+                <div class="flex items-center gap-3">
+                  <% if w.poster_path.present? %>
+                    <img src="https://image.tmdb.org/t/p/w92<%= w.poster_path %>" alt="" class="w-8 h-12 object-cover rounded shadow shrink-0" />
+                  <% else %>
+                    <div class="w-8 h-12 rounded bg-zinc-800 flex items-center justify-center text-xs text-zinc-500 shrink-0">🎬</div>
+                  <% end %>
+                  <div>
+                    <span class="font-bold text-white block"><%= w.title %></span>
+                    <% if w.genres.present? %>
+                      <span class="text-[11px] text-zinc-400 block truncate max-w-xs"><%= w.genres %></span>
+                    <% end %>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold <%= w.media_type == 'movie' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-cyan-500/20 text-cyan-300' %>">
+                  <%= w.media_type == 'movie' ? 'Film' : 'Dizi' %>
+                </span>
+              </td>
+              <td class="py-3 text-purple-400 font-semibold">
+                <%= link_to w.user.username, admin_user_path(w.user), class: "hover:underline" %>
+              </td>
+              <td class="py-3">
+                <% if w.status == 1 %>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">İzlendi</span>
+                <% else %>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">İzlenecek</span>
+                <% end %>
+              </td>
+              <td class="py-3 text-zinc-300 font-bold">
+                <%= w.user_rating.present? ? "★ #{w.user_rating}" : "—" %>
+              </td>
+              <td class="py-3 text-zinc-400">
+                <%= w.watched_at.present? ? w.watched_at.strftime("%d.%m.%Y") : "—" %>
+              </td>
+              <td class="py-3 text-zinc-500">
+                <%= time_ago_in_words(w.created_at) %> önce
+              </td>
+              <td class="py-3 text-right">
+                <%= button_to admin_watchlist_path(w), method: :delete, data: { turbo_confirm: "\"#{w.title}\" kaydını silmek istediğinizden emin misiniz?" }, class: "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition cursor-pointer inline-block", title: "Kaydı Sil" do %>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="8" class="text-center py-8 text-zinc-500">
+              Kayıt bulunamadı.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
