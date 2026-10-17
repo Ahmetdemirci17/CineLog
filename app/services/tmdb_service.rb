@@ -16,6 +16,58 @@ class TmdbService
     end
   end
 
+  # Top Rated Movies (IMDb Top 250 style Bayesian weighted ranking)
+  def top_rated_movies(page: 1, language: "tr-TR")
+    page_num = [[page.to_i, 1].max, 500].min
+    per_page = 20
+    m_const = 12000.0
+    c_const = 7.0
+    cutoff_date = (Date.current - 120).to_s
+
+    cache_key = "tmdb_bayesian_top_movies_v2/#{language}"
+    ranked_pool = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
+      candidates = []
+
+      (1..6).each do |p|
+        res = fetch_with_cache("discover/movie", {
+          without_genres: "99,10770",
+          sort_by: "vote_count.desc",
+          "vote_average.gte" => 7.5,
+          "primary_release_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      (1..4).each do |p|
+        res = fetch_with_cache("discover/movie", {
+          without_genres: "99,10770",
+          sort_by: "vote_average.desc",
+          "vote_count.gte" => 5000,
+          "primary_release_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      unique_movies = candidates.uniq { |m| m["id"] }
+      unique_movies = fallback_popular_movies["results"] || [] if unique_movies.blank?
+      unique_movies.sort_by { |m| -bayesian_score(m, m_const, c_const) }
+    end
+
+    offset = (page_num - 1) * per_page
+    results = ranked_pool.slice(offset, per_page) || []
+
+    {
+      "page" => page_num,
+      "results" => results,
+      "total_pages" => [ranked_pool.size / per_page, 1].max,
+      "total_results" => ranked_pool.size
+    }
+  end
+
   # Popular TV Shows
   def popular_tv(page: 1, language: "tr-TR")
     fetch_with_cache("tv/popular", { page: page, language: language }) do
@@ -30,32 +82,113 @@ class TmdbService
     end
   end
 
-  # Top Rated TV Shows
+  # Top Rated TV Shows (IMDb Top 250 TV style Bayesian weighted ranking)
   def top_rated_tv(page: 1, language: "tr-TR")
-    fetch_with_cache("tv/top_rated", { page: page, language: language }) do
-      fallback_popular_tv
+    page_num = [[page.to_i, 1].max, 500].min
+    per_page = 20
+    m_const = 4500.0
+    c_const = 7.2
+    cutoff_date = (Date.current - 90).to_s
+
+    cache_key = "tmdb_bayesian_top_tv_v2/#{language}"
+    ranked_pool = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
+      candidates = []
+
+      (1..5).each do |p|
+        res = fetch_with_cache("discover/tv", {
+          without_genres: "10763,10764,10767",
+          sort_by: "vote_count.desc",
+          "vote_average.gte" => 7.5,
+          "first_air_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      (1..4).each do |p|
+        res = fetch_with_cache("discover/tv", {
+          without_genres: "10763,10764,10767",
+          sort_by: "vote_average.desc",
+          "vote_count.gte" => 1500,
+          "first_air_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        })
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      unique_shows = candidates.uniq { |t| t["id"] }
+      unique_shows = fallback_popular_tv["results"] || [] if unique_shows.blank?
+      unique_shows.each { |item| item["media_type"] ||= "tv" }
+      unique_shows.sort_by { |t| -bayesian_score(t, m_const, c_const) }
     end
+
+    offset = (page_num - 1) * per_page
+    results = ranked_pool.slice(offset, per_page) || []
+
+    {
+      "page" => page_num,
+      "results" => results,
+      "total_pages" => [ranked_pool.size / per_page, 1].max,
+      "total_results" => ranked_pool.size
+    }
   end
 
-  # Discover TV Shows by Genre ID
+  # Discover TV Shows by Genre ID (IMDb Bayesian weighted ranking & genre purity)
   def discover_tv_by_genre(genre_id, page: 1, sort_by: "vote_average.desc", language: "tr-TR")
-    params = {
-      with_genres: genre_id,
-      sort_by: sort_by,
-      "vote_count.gte" => 200,
-      page: page,
-      language: language
+    gid = genre_id.to_i
+    m_const = 3500.0
+    c_const = 7.2
+    cutoff_date = (Date.current - 90).to_s
+    without = tv_genre_exclusions(gid)
+
+    cache_key = "tmdb_bayesian_tv_genre_v2/#{gid}/#{sort_by}/#{language}"
+    ranked_pool = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
+      candidates = []
+
+      (1..4).each do |p|
+        params = {
+          with_genres: gid,
+          sort_by: "vote_count.desc",
+          "vote_average.gte" => 7.2,
+          "first_air_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        }
+        params[:without_genres] = without if without.present?
+        res = fetch_with_cache("discover/tv", params) { fallback_popular_tv }
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      (1..3).each do |p|
+        params = {
+          with_genres: gid,
+          sort_by: "vote_average.desc",
+          "vote_count.gte" => 1000,
+          "first_air_date.lte" => cutoff_date,
+          page: p,
+          language: language
+        }
+        params[:without_genres] = without if without.present?
+        res = fetch_with_cache("discover/tv", params) { fallback_popular_tv }
+        candidates.concat(res["results"] || []) if res.is_a?(Hash)
+      end
+
+      unique_shows = candidates.uniq { |t| t["id"] }
+      filtered = unique_shows.select { |t| tv_genre_matches_purely?(t, gid) }
+      filtered = unique_shows if filtered.size < 8
+      filtered = fallback_popular_tv["results"] || [] if filtered.blank?
+      filtered.each { |item| item["media_type"] ||= "tv" }
+      filtered.sort_by { |t| -bayesian_score(t, m_const, c_const, gid) }
+    end
+
+    {
+      "page" => page,
+      "results" => ranked_pool.first(20),
+      "total_pages" => 1,
+      "total_results" => ranked_pool.size
     }
-
-    res = fetch_with_cache("discover/tv", params) do
-      fallback_popular_tv
-    end
-
-    if res.is_a?(Hash) && res["results"].is_a?(Array)
-      res["results"].each { |item| item["media_type"] ||= "tv" }
-    end
-
-    res
   end
 
   # Trending Content (movies + tv)
@@ -152,16 +285,30 @@ class TmdbService
       return discover_top_rated_weighted(genre_id, page: page, language: language)
     end
 
+    gid = genre_id.to_i
+    without = movie_genre_exclusions(gid)
+    min_votes = sort_by.to_s.include?("release_date") ? 50 : ([99, 10770].include?(gid) ? 100 : 300)
+
     params = {
-      with_genres: genre_id,
+      with_genres: gid,
       sort_by: sort_by,
+      "vote_count.gte" => min_votes,
       page: page,
       language: language
     }
+    params[:without_genres] = without if without.present?
+    params["primary_release_date.lte"] = Date.current.to_s if sort_by.to_s.include?("release_date")
 
-    fetch_with_cache("discover/movie", params) do
-      fallback_discover_by_genre(genre_id)
+    res = fetch_with_cache("discover/movie", params) do
+      fallback_discover_by_genre(gid)
     end
+
+    if res.is_a?(Hash) && res["results"].is_a?(Array)
+      filtered = res["results"].select { |m| movie_genre_matches_purely?(m, gid) }
+      res = res.merge("results" => filtered) if filtered.size >= 6
+    end
+
+    res
   end
 
   # Person (Actor / Director) Details
@@ -258,83 +405,204 @@ class TmdbService
 
   private
 
-  # IMDb Top 250 Bayesian formula:
-  # WR = (v / (v + m)) * R + (m / (v + m)) * C
-  def bayesian_score(m, m_const = 1500.0, c_const = 6.9)
-    v = m["vote_count"].to_f
-    r = m["vote_average"].to_f
-    ((v / (v + m_const)) * r) + ((m_const / (v + m_const)) * c_const)
+  # Conflicting genres to exclude per movie category so categories stay pure (e.g. no Pulp Fiction/Parasite in Comedy)
+  def movie_genre_exclusions(genre_id)
+    case genre_id.to_i
+    when 35 # Komedi -> Exclude Drama, Thriller, War, Horror, History, Animation
+      "18,53,10752,27,36,16"
+    when 27 # Korku -> Exclude Animation, Family, War, History, Comedy, Romance
+      "16,10751,10752,36,35,10749"
+    when 80 # Suç -> Exclude Sci-Fi, Fantasy, Animation, Family, Adventure, Comedy
+      "878,14,16,10751,12,35"
+    when 10749 # Romantik -> Exclude Animation, Horror, Thriller, Crime, War, Sci-Fi
+      "16,27,53,80,10752,878"
+    when 99 # Belgesel -> Exclude Music concert films & TV specials
+      "10402,10770"
+    when 28, 12, 878, 14, 18, 53, 9648, 10752, 36, 37, 10402 # Live-action genres -> Exclude Animation (16) and Documentary (99)
+      "16,99"
+    else
+      nil
+    end
   end
 
-  # Seamless Bayesian Weighted Ranking for "En Beğenilenler"
-  # Preserves full genre film count and complete pagination without drop
+  def tv_genre_exclusions(genre_id)
+    case genre_id.to_i
+    when 35 # Komedi -> Exclude Crime, War & Politics, Mystery, Talk/News/Reality
+      "80,10768,9648,10763,10764,10767"
+    when 80 # Suç -> Exclude Animation, Kids, Comedy, Talk/Reality
+      "16,10762,35,10763,10764,10767"
+    when 18, 9648 # Dram / Gizem -> Exclude Kids, Talk/Reality
+      "10762,10763,10764,10767"
+    else
+      "10763,10764,10767"
+    end
+  end
+
+  # Ensure the target genre is a primary/core genre of the movie, not a minor 3rd/4th sub-tag
+  def movie_genre_matches_purely?(movie, genre_id)
+    gid = genre_id.to_i
+    gids = (movie["genre_ids"] || []).map(&:to_i)
+    return true if gids.empty?
+    return false unless gids.include?(gid)
+
+    case gid
+    when 35 # Komedi: must be 1st genre, or 2nd genre when not overshadowed by Action (28) / Crime (80) / Drama (18) / Thriller (53)
+      return false if (gids & [18, 53, 27, 10752, 36, 16]).any?
+      gids.first == 35 || (gids[0..1].include?(35) && !gids.include?(28) && !gids.include?(80))
+    when 27 # Korku: must be 1st or 2nd genre, no Family/Animation/War
+      return false if (gids & [16, 10751, 10752, 35]).any?
+      gids[0..1].include?(27)
+    when 80 # Suç: must be 1st or 2nd genre, no Sci-Fi/Fantasy/Animation
+      return false if (gids & [878, 14, 16, 10751]).any?
+      gids[0..1].include?(80)
+    when 10749 # Romantik: must be 1st or 2nd genre
+      return false if (gids & [16, 27, 53, 80, 10752]).any?
+      gids[0..1].include?(10749)
+    when 28, 12, 18, 14, 9648, 36, 10402
+      return false if gids.include?(16)
+      gids[0..1].include?(gid)
+    when 878, 53, 10752, 37
+      return false if gids.include?(16)
+      gids[0..2].include?(gid)
+    else
+      true
+    end
+  end
+
+  def tv_genre_matches_purely?(show, genre_id)
+    gid = genre_id.to_i
+    gids = (show["genre_ids"] || []).map(&:to_i)
+    return true if gids.empty?
+    return false unless gids.include?(gid)
+
+    case gid
+    when 35
+      return false if (gids & [80, 10768, 9648]).any?
+      gids[0..1].include?(35)
+    when 80
+      return false if (gids & [16, 10762, 35]).any?
+      gids[0..1].include?(80)
+    else
+      gids[0..2].include?(gid)
+    end
+  end
+
+  # IMDb Top 250 Bayesian formula:
+  # WR = (v / (v + m)) * R + (m / (v + m)) * C
+  # Includes high m_const confidence threshold so low-vote niche or brand-new titles cannot outrank true classics
+  def bayesian_score(m, m_const = 10000.0, c_const = 7.0, target_genre_id = nil)
+    v = m["vote_count"].to_f
+    r = m["vote_average"].to_f
+    base = ((v / (v + m_const)) * r) + ((m_const / (v + m_const)) * c_const)
+
+    # Slight primary-genre relevance bonus when ranking inside a specific category
+    if target_genre_id
+      gids = (m["genre_ids"] || []).map(&:to_i)
+      if gids.first == target_genre_id.to_i
+        base += 0.08
+      elsif gids[1] == target_genre_id.to_i
+        base += 0.03
+      end
+    end
+
+    base
+  end
+
+  # IMDb Top 250 style Bayesian Weighted Ranking for "En Beğenilenler"
   def discover_top_rated_weighted(genre_id, page: 1, language: "tr-TR")
+    gid = genre_id.to_i
     page_num = [[page.to_i, 1].max, 500].min
     per_page = 20
+    without = movie_genre_exclusions(gid)
+    cutoff_date = (Date.current - 120).to_s
 
-    # 1. Obtain baseline total count of movies in this genre so total_results does NOT drop
-    base_res = fetch_with_cache("discover/movie", { with_genres: genre_id, language: language })
-    total_results = base_res.is_a?(Hash) && base_res["total_results"].present? ? base_res["total_results"].to_i : 20001
+    # Genre-appropriate vote confidence threshold (m) and minimum vote floor
+    m_const, min_votes, min_avg = case gid
+    when 99, 10770 # Belgesel, TV Film
+      [1500.0, 400, 7.2]
+    when 37, 10402, 36, 10752 # Vahşi Batı, Müzik, Tarih, Savaş
+      [5000.0, 1500, 7.2]
+    when 27, 10749, 35 # Korku, Romantik, Komedi
+      [8000.0, 2500, 7.0]
+    else # Aksiyon, Dram, Bilimkurgu, Suç, Gerilim, Macera, Animasyon, Fantastik, Gizem
+      [10000.0, 3000, 7.2]
+    end
+    c_const = 7.0
+
+    # 1. Obtain baseline total count of movies in this genre
+    base_params = { with_genres: gid, language: language }
+    base_params[:without_genres] = without if without.present?
+    base_res = fetch_with_cache("discover/movie", base_params)
+    total_results = base_res.is_a?(Hash) && base_res["total_results"].present? ? base_res["total_results"].to_i : 10000
     total_pages = base_res.is_a?(Hash) && base_res["total_pages"].present? ? [[base_res["total_pages"].to_i, 1].max, 500].min : 500
 
-    m_const = 1500.0
-    c_const = 6.9
-
-    # 2. Build or fetch cached Bayesian top pool for the genre
-    cache_key = "tmdb_bayesian_top_pool/genre_#{genre_id}/#{language}"
+    # 2. Build or fetch cached IMDb Bayesian top pool for the genre
+    cache_key = "tmdb_bayesian_top_pool_v3/genre_#{gid}/#{language}"
     ranked_pool = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
       candidates = []
 
-      # Candidate set 1: top 100 most voted movies in genre (pages 1..5)
-      (1..5).each do |p|
-        res = fetch_with_cache("discover/movie", {
-          with_genres: genre_id,
+      # Candidate set 1: top 160 most voted acclaimed movies in genre (pages 1..8)
+      (1..8).each do |p|
+        params = {
+          with_genres: gid,
           sort_by: "vote_count.desc",
-          "vote_average.gte" => 6.5,
+          "vote_average.gte" => min_avg,
+          "vote_count.gte" => min_votes,
+          "primary_release_date.lte" => cutoff_date,
           page: p,
           language: language
-        })
+        }
+        params[:without_genres] = without if without.present?
+        res = fetch_with_cache("discover/movie", params)
         candidates.concat(res["results"] || []) if res.is_a?(Hash)
       end
 
-      # Candidate set 2: highest rated movies with at least 500 votes (pages 1..3)
-      (1..3).each do |p|
-        res = fetch_with_cache("discover/movie", {
-          with_genres: genre_id,
+      # Candidate set 2: highest rated movies with strong vote floor (pages 1..4)
+      (1..4).each do |p|
+        params = {
+          with_genres: gid,
           sort_by: "vote_average.desc",
-          "vote_count.gte" => 500,
-          "primary_release_date.lte" => Date.current.to_s,
+          "vote_count.gte" => min_votes,
+          "primary_release_date.lte" => cutoff_date,
           page: p,
           language: language
-        })
+        }
+        params[:without_genres] = without if without.present?
+        res = fetch_with_cache("discover/movie", params)
         candidates.concat(res["results"] || []) if res.is_a?(Hash)
       end
 
       unique_movies = candidates.uniq { |m| m["id"] }
+      pure_movies = unique_movies.select { |m| movie_genre_matches_purely?(m, gid) }
+      pure_movies = unique_movies if pure_movies.size < 15
 
-      if unique_movies.blank?
-        fb = fallback_discover_by_genre(genre_id)
-        unique_movies = fb["results"] || []
+      if pure_movies.blank?
+        fb = fallback_discover_by_genre(gid)
+        pure_movies = fb["results"] || []
       end
 
-      unique_movies.sort_by { |m| -bayesian_score(m, m_const, c_const) }
+      pure_movies.sort_by { |m| -bayesian_score(m, m_const, c_const, gid) }
     end
 
-    max_full_pool_pages = ranked_pool.size / per_page
+    max_full_pool_pages = [ranked_pool.size / per_page, 1].max
 
     results = if page_num <= max_full_pool_pages
       offset = (page_num - 1) * per_page
       ranked_pool.slice(offset, per_page) || []
     else
-      # Beyond the pre-ranked pool, query TMDB vote_count.desc directly and sort within the page by Bayesian score
-      direct_res = fetch_with_cache("discover/movie", {
-        with_genres: genre_id,
+      direct_params = {
+        with_genres: gid,
         sort_by: "vote_count.desc",
+        "primary_release_date.lte" => cutoff_date,
         page: page_num,
         language: language
-      })
+      }
+      direct_params[:without_genres] = without if without.present?
+      direct_res = fetch_with_cache("discover/movie", direct_params)
       list = direct_res.is_a?(Hash) && direct_res["results"].present? ? direct_res["results"] : []
-      list.sort_by { |m| -bayesian_score(m, m_const, c_const) }
+      filtered_list = list.select { |m| movie_genre_matches_purely?(m, gid) }
+      filtered_list = list if filtered_list.size < 6
+      filtered_list.sort_by { |m| -bayesian_score(m, m_const, c_const, gid) }
     end
 
     {
