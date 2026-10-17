@@ -90,6 +90,7 @@ production:
     database: cinema_production
     username: cinema
     password: <%= ENV["CINEMA_DATABASE_PASSWORD"] %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
   cache:
     <<: *primary_production
     database: cinema_production_cache
