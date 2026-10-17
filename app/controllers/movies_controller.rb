@@ -8,6 +8,10 @@ class MoviesController < ApplicationController
       response = service.trending(page: params[:page] || 1)
       @items = response["results"] || []
       @hero_item = @items.first
+    when "top_rated"
+      response = service.top_rated_movies(page: params[:page] || 1)
+      @items = response["results"] || []
+      @hero_item = @items.first
     when "tv"
       response = service.popular_tv(page: params[:page] || 1)
       @items = response["results"] || []

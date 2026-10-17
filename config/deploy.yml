@@ -24,6 +24,10 @@ servers:
 proxy:
   ssl: true
   host: cinelog.merendmrc.com
+  healthcheck:
+    path: /up
+    interval: 2
+    timeout: 3
 
 # Where you keep your container images.
 registry:

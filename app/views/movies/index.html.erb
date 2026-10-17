@@ -84,6 +84,10 @@
             <span>Trendler</span>
           <% end %>
 
+          <%= link_to root_path(tab: "top_rated"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'top_rated' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+            <span>En Beğenilenler</span>
+          <% end %>
+
           <%= link_to root_path(tab: "tv"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
             <span>Diziler</span>
           <% end %>
