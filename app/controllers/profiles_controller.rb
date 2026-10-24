@@ -7,7 +7,7 @@ class ProfilesController < ApplicationController
     end
 
     @stats = Watchlist.stats_for(@user)
-    @favorites = @user.watchlists.watched.where("user_rating >= ?", 9).order(user_rating: :desc, watched_at: :desc).limit(6)
+    @favorites = @user.watchlists.watched.where("user_rating >= ?", 9).reorder(user_rating: :desc, watched_at: :desc).limit(6)
 
     @current_tab = params[:tab].presence || "watched"
 
@@ -15,7 +15,7 @@ class ProfilesController < ApplicationController
     when "plan_to_watch"
       @watchlists = @user.watchlists.plan_to_watch
     when "favorites"
-      @watchlists = @user.watchlists.watched.where.not(user_rating: nil).order(user_rating: :desc, watched_at: :desc)
+      @watchlists = @user.watchlists.watched.where.not(user_rating: nil).reorder(user_rating: :desc, watched_at: :desc)
     when "community"
       @posts = @user.community_posts.includes(:community_replies).order(created_at: :desc)
     else # "watched"

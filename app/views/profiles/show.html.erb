@@ -158,12 +158,12 @@
     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
       <%= link_to user_profile_path(@user.username, tab: "watched", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'watched' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
         <span>İzledikleri</span>
-        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'watched' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.watchlists.watched.count %></span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full <%= @current_tab == 'watched' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400' %>"><%= @user.watchlists.watched.count %></span>
       <% end %>
 
       <%= link_to user_profile_path(@user.username, tab: "plan_to_watch", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'plan_to_watch' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
         <span>İzleyecekleri</span>
-        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'plan_to_watch' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.watchlists.plan_to_watch.count %></span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full <%= @current_tab == 'plan_to_watch' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400' %>"><%= @user.watchlists.plan_to_watch.count %></span>
       <% end %>
 
       <%= link_to user_profile_path(@user.username, tab: "favorites", media_type: params[:media_type]), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'favorites' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
@@ -172,7 +172,7 @@
 
       <%= link_to user_profile_path(@user.username, tab: "community"), class: "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap #{@current_tab == 'community' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}" do %>
         <span>Paylaşımları</span>
-        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full #{@current_tab == 'community' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400'}"><%= @user.community_posts.count %></span>
+        <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full <%= @current_tab == 'community' ? 'bg-purple-800 text-white' : 'bg-zinc-800 text-zinc-400' %>"><%= @user.community_posts.count %></span>
       <% end %>
     </div>
 

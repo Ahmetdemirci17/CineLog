@@ -51,6 +51,9 @@ class AdminPanelTest < ActionDispatch::IntegrationTest
     assert_match "Kullanıcılar", response.body
     assert_match "İzleme Kayıtları", response.body
     assert_match "Topluluk Gönderileri", response.body
+    refute_includes response.body, "\#{"
+    assert_select "a[href=?] svg.text-purple-400", admin_root_path
+    assert_select "a[href=?] svg.text-zinc-500", admin_users_path
   end
 
   test "admin can view users list and toggle admin role" do

@@ -73,10 +73,35 @@ class ProfilesTest < ActionDispatch::IntegrationTest
     assert_select "span.text-emerald-400", text: /İzlendi/, count: 0
   end
 
-  test "can view favorites tab with high rated items" do
+  test "can view favorites tab ordered by highest rating first while watched tab preserves watched_at order" do
+    @watched_movie.update!(watched_at: 3.days.ago)
+    Watchlist.create!(
+      user: @user,
+      tmdb_id: 300,
+      media_type: "movie",
+      title: "Arrival",
+      status: 1,
+      user_rating: 9,
+      watched_at: 1.hour.ago,
+      runtime: 116,
+      genres: "Bilim Kurgu"
+    )
+
+    # 1. Favorites tab orders by user_rating DESC (Interstellar 10 before Arrival 9)
     get user_profile_path(@user.username, tab: "favorites")
     assert_response :success
     assert_select "h4", text: /Interstellar/
+    assert_select "h4", text: /Arrival/
+    assert_operator response.body.index("Interstellar"), :<, response.body.index("Arrival")
+
+    # 2. Watched tab top showcase (@favorites) orders by user_rating DESC, while main grid (@watchlists) orders by watched_at DESC
+    get user_profile_path(@user.username, tab: "watched")
+    assert_response :success
+    showcase_titles = css_select("div.p-2\\.5 span.font-bold").map { |el| el.text.strip }
+    assert_equal ["Interstellar", "Arrival"], showcase_titles
+
+    grid_titles = css_select("h4 a").map { |el| el.text.strip }
+    assert_equal ["Arrival", "Interstellar"], grid_titles
   end
 
   test "can view community posts tab" do
@@ -117,5 +142,34 @@ class ProfilesTest < ActionDispatch::IntegrationTest
     get community_posts_path
     assert_response :success
     assert_select "a[href=?]", user_profile_path(@user.username)
+    refute_includes response.body, "\#{"
+    assert_select "nav a[href=?] svg.text-purple-400", community_posts_path
+    assert_select "nav a[href=?] svg.text-zinc-400", root_path
+  end
+
+  test "profile page does not contain uninterpolated ruby expressions in HTML and applies active tab badge classes" do
+    get user_profile_path(@user.username)
+    assert_response :success
+    refute_includes response.body, "\#{"
+    assert_select "a[href=?] span.bg-purple-800.text-white", user_profile_path(@user.username, tab: "watched")
+    assert_select "a[href=?] span.bg-zinc-800.text-zinc-400", user_profile_path(@user.username, tab: "plan_to_watch")
+  end
+
+  test "author can delete their own community post" do
+    sign_in @user
+    assert_difference("CommunityPost.count", -1) do
+      delete community_post_path(@post)
+    end
+    assert_redirected_to community_posts_path
+    assert_equal "Konu silindi.", flash[:notice]
+  end
+
+  test "non-author cannot delete another user community post" do
+    sign_in @viewer
+    assert_no_difference("CommunityPost.count") do
+      delete community_post_path(@post)
+    end
+    assert_redirected_to community_posts_path
+    assert_equal "Bu işlem için yetkiniz yok.", flash[:alert]
   end
 end

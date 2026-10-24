@@ -38,8 +38,8 @@ class CommunityPostsController < ApplicationController
   end
 
   def destroy
-    if @post.user == current_user
-      @post.destroy
+    if @community_post.user == current_user
+      @community_post.destroy
       redirect_to community_posts_path, notice: "Konu silindi."
     else
       redirect_to community_posts_path, alert: "Bu işlem için yetkiniz yok."
