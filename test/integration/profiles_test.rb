@@ -49,6 +49,8 @@ class ProfilesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: /cinephile/
     assert_select "h4", text: /Interstellar/
+    assert_select "span.text-emerald-400", text: /İzlendi/
+    assert_select "span.text-amber-400", text: /İzlenecek/, count: 0
   end
 
   test "profile handles case-insensitivity in username" do
@@ -67,6 +69,8 @@ class ProfilesTest < ActionDispatch::IntegrationTest
     get user_profile_path(@user.username, tab: "plan_to_watch")
     assert_response :success
     assert_select "h4", text: /Dune/
+    assert_select "span.text-amber-400", text: /İzlenecek/
+    assert_select "span.text-emerald-400", text: /İzlendi/, count: 0
   end
 
   test "can view favorites tab with high rated items" do
@@ -104,7 +108,7 @@ class ProfilesTest < ActionDispatch::IntegrationTest
 
   test "navbar user pill links to current user profile" do
     sign_in @viewer
-    get root_path
+    get community_posts_path
     assert_response :success
     assert_select "a[href=?]", user_profile_path(@viewer.username)
   end

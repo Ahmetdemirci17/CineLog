@@ -75,7 +75,7 @@
               <% end %>
               <div class="min-w-0">
                 <span class="font-semibold text-white truncate block"><%= w.title %></span>
-                <span class="text-[11px] text-zinc-500"><%= w.media_type == 'movie' ? 'Film' : 'Dizi' %> • <%= w.status == 1 ? 'İzlendi' : 'İzlenecek' %></span>
+                <span class="text-[11px] text-zinc-500"><%= w.media_type == 'movie' ? 'Film' : 'Dizi' %> • <%= w.watched? ? 'İzlendi' : 'İzlenecek' %></span>
               </div>
             </div>
             <% if w.user_rating.present? %>

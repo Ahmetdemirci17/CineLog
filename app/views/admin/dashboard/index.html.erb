@@ -209,7 +209,7 @@
               <%= link_to w.user.username, admin_user_path(w.user), class: "hover:underline" %>
             </td>
             <td class="py-3">
-              <% if w.status == 1 %>
+              <% if w.watched? %>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">İzlendi</span>
               <% else %>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">İzlenecek</span>

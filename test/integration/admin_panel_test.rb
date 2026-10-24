@@ -95,6 +95,7 @@ class AdminPanelTest < ActionDispatch::IntegrationTest
     get admin_watchlists_path
     assert_response :success
     assert_match @watchlist.title, response.body
+    assert_select "span.text-emerald-300", text: "İzlendi"
 
     assert_difference("Watchlist.count", -1) do
       delete admin_watchlist_path(@watchlist)
