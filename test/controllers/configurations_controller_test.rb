@@ -44,7 +44,7 @@ class ConfigurationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "meta[name='viewport'][content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover']"
   end
 
-  test "hotwire native request hides web navbar and footer" do
+  test "hotwire native request hides footer and keeps mobile navigation" do
     get new_user_session_path
     assert_response :success
     assert_select "nav", minimum: 1
@@ -52,7 +52,7 @@ class ConfigurationsControllerTest < ActionDispatch::IntegrationTest
 
     get new_user_session_path, headers: NATIVE_IOS_HEADERS
     assert_response :success
-    assert_select "nav", count: 0
+    assert_select "nav", minimum: 1
     assert_select "footer", count: 0
   end
 
