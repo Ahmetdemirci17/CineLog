@@ -1,71 +1,72 @@
-<div class="space-y-8">
-  <!-- Header Title & User Summary -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-zinc-800/80 pb-6">
-    <div>
-      <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight">
-        İzleme <span class="text-purple-400">Listem</span>
-      </h1>
-      <p class="text-xs sm:text-sm text-zinc-400 mt-1">Kaydettiğiniz filmler, diziler ve izleme geçmişiniz.</p>
+<%= filter_frame_tag "watchlists_content" do %>
+  <div class="space-y-8">
+    <!-- Header Title & User Summary -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-zinc-800/80 pb-6">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight">
+          İzleme <span class="text-purple-400">Listem</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-zinc-400 mt-1">Kaydettiğiniz filmler, diziler ve izleme geçmişiniz.</p>
+      </div>
+
+      <!-- Segmented Pill Bar Navigation -->
+      <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner overflow-x-auto max-w-full">
+        <%= link_to watchlists_path(tab: "plan_to_watch", media_type: @media_filter == 'all' ? nil : @media_filter), data: { turbo_frame: "watchlists_content" }, class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>İzleyeceklerim</span>
+          <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'plan_to_watch' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
+            <%= @plan_to_watch_items.count %>
+          </span>
+        <% end %>
+
+        <%= link_to watchlists_path(tab: "watched", media_type: @media_filter == 'all' ? nil : @media_filter), data: { turbo_frame: "watchlists_content" }, class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>İzlediklerim</span>
+          <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'watched' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
+            <%= @watched_items.count %>
+          </span>
+        <% end %>
+
+        <%= link_to watchlists_path(tab: "recommendations", media_type: @media_filter == 'all' ? nil : @media_filter), data: { turbo_frame: "watchlists_content" }, class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'recommendations' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+          <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Sana Özel Öneriler</span>
+          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full <%= @active_tab == 'recommendations' ? 'bg-black/30 text-white' : 'bg-purple-600/20 text-purple-300 border border-purple-500/30' %>">
+            ✨ Yapay Zeka
+          </span>
+        <% end %>
+      </div>
     </div>
 
-    <!-- Segmented Pill Bar Navigation -->
-    <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800/80 inline-flex items-center gap-1.5 self-start md:self-auto shadow-inner overflow-x-auto max-w-full">
-      <%= link_to watchlists_path(tab: "plan_to_watch", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'plan_to_watch' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>İzleyeceklerim</span>
-        <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'plan_to_watch' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
-          <%= @plan_to_watch_items.count %>
-        </span>
-      <% end %>
+    <!-- Media Type Filter (Tümü / Filmler / Diziler) -->
+    <%
+      all_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_total : @watched_total
+      movie_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_movies_count : @watched_movies_count
+      tv_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_tv_count : @watched_tv_count
+    %>
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[#121217] border border-zinc-800/80">
+        <%= link_to watchlists_path(tab: @active_tab), data: { turbo_frame: "watchlists_content" }, class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'all' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+          <span>Tümü</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= all_cnt %></span>
+        <% end %>
 
-      <%= link_to watchlists_path(tab: "watched", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'watched' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>İzlediklerim</span>
-        <span class="px-2 py-0.5 text-[11px] rounded-full font-bold <%= @active_tab == 'watched' ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-300' %>">
-          <%= @watched_items.count %>
-        </span>
-      <% end %>
+        <%= link_to watchlists_path(tab: @active_tab, media_type: "movie"), data: { turbo_frame: "watchlists_content" }, class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'movie' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+          <span>🎬 Filmler</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= movie_cnt %></span>
+        <% end %>
 
-      <%= link_to watchlists_path(tab: "recommendations", media_type: @media_filter == 'all' ? nil : @media_filter), class: "px-4 sm:px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shrink-0 #{@active_tab == 'recommendations' ? 'bg-purple-600 text-white font-semibold shadow-lg shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-        <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-        <span>Sana Özel Öneriler</span>
-        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full <%= @active_tab == 'recommendations' ? 'bg-black/30 text-white' : 'bg-purple-600/20 text-purple-300 border border-purple-500/30' %>">
-          ✨ Yapay Zeka
-        </span>
-      <% end %>
+        <%= link_to watchlists_path(tab: @active_tab, media_type: "tv"), data: { turbo_frame: "watchlists_content" }, class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
+          <span>📺 Diziler</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= tv_cnt %></span>
+        <% end %>
+      </div>
     </div>
-  </div>
-
-  <!-- Media Type Filter (Tümü / Filmler / Diziler) -->
-  <%
-    all_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_total : @watched_total
-    movie_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_movies_count : @watched_movies_count
-    tv_cnt = @active_tab == "plan_to_watch" ? @plan_to_watch_tv_count : @watched_tv_count
-  %>
-  <div class="flex items-center justify-between flex-wrap gap-3">
-    <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[#121217] border border-zinc-800/80">
-      <%= link_to watchlists_path(tab: @active_tab), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'all' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
-        <span>Tümü</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= all_cnt %></span>
-      <% end %>
-
-      <%= link_to watchlists_path(tab: @active_tab, media_type: "movie"), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'movie' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
-        <span>🎬 Filmler</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= movie_cnt %></span>
-      <% end %>
-
-      <%= link_to watchlists_path(tab: @active_tab, media_type: "tv"), class: "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 #{@media_filter == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/30 shadow-sm' : 'text-zinc-400 hover:text-white'}" do %>
-        <span>📺 Diziler</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30 text-zinc-300"><%= tv_cnt %></span>
-      <% end %>
-    </div>
-  </div>
 
   <% if @active_tab == "watched" %>
     <% if @watched_items.empty? %>
@@ -265,7 +266,7 @@
                 <%= f.select :user_rating, (1..10).map { |r| ["★ #{r}", r] }, { selected: item.user_rating, include_blank: "Puan Değiştir" }, class: "text-xs bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-zinc-200 focus:outline-none focus:border-purple-500 w-full transition cursor-pointer", onchange: "this.form.requestSubmit()" %>
               <% end %>
 
-              <%= link_to watchlists_path(tab: "recommendations", source_id: item.tmdb_id, source_type: item.media_type), class: "w-full py-1.5 px-2 rounded-xl bg-purple-600/10 hover:bg-purple-600/25 border border-purple-500/25 text-purple-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition duration-150" do %>
+              <%= link_to watchlists_path(tab: "recommendations", source_id: item.tmdb_id, source_type: item.media_type), data: { turbo_frame: "watchlists_content" }, class: "w-full py-1.5 px-2 rounded-xl bg-purple-600/10 hover:bg-purple-600/25 border border-purple-500/25 text-purple-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition duration-150" do %>
                 <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
@@ -326,7 +327,7 @@
           <% media_filter_param = (@media_filter unless @media_filter == "all") %>
           <div class="flex items-center gap-2.5 flex-wrap self-start md:self-auto shrink-0">
             <% if @source_id == 'all' && @watched_items.count > 4 %>
-              <%= link_to watchlists_path(tab: "recommendations", source_id: "all", media_type: media_filter_param), onclick: "this.href = '#{watchlists_path(tab: 'recommendations', source_id: 'all', media_type: media_filter_param)}&refresh=' + Date.now()", class: "px-3 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/35 border border-purple-500/40 text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 shadow-sm", title: "Farklı izlediğiniz filmlerden yeni bir karışım oluştur" do %>
+              <%= link_to watchlists_path(tab: "recommendations", source_id: "all", media_type: media_filter_param), data: { turbo_frame: "watchlists_content" }, onclick: "this.href = '#{watchlists_path(tab: 'recommendations', source_id: 'all', media_type: media_filter_param)}&refresh=' + Date.now()", class: "px-3 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/35 border border-purple-500/40 text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 shadow-sm", title: "Farklı izlediğiniz filmlerden yeni bir karışım oluştur" do %>
                 <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
@@ -336,7 +337,7 @@
 
             <div class="flex items-center gap-2">
               <label for="recommendation_source_select" class="text-xs font-semibold text-zinc-400">Kaynak Yapım:</label>
-              <select id="recommendation_source_select" onchange="const val = this.value; let url; if (val === 'all') { url = '<%= watchlists_path(tab: 'recommendations', source_id: 'all', media_type: media_filter_param) %>'; } else { const [stype, sid] = val.split(':'); url = '<%= watchlists_path(tab: 'recommendations', media_type: media_filter_param) %>' + '&source_id=' + encodeURIComponent(sid) + '&source_type=' + encodeURIComponent(stype); } if (window.Turbo) { window.Turbo.visit(url); } else { window.location.href = url; }" class="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 transition cursor-pointer max-w-[260px] sm:max-w-xs shadow-inner">
+              <select id="recommendation_source_select" onchange="const val = this.value; let url; if (val === 'all') { url = '<%= watchlists_path(tab: 'recommendations', source_id: 'all', media_type: media_filter_param) %>'; } else { const [stype, sid] = val.split(':'); url = '<%= watchlists_path(tab: 'recommendations', media_type: media_filter_param) %>' + '&source_id=' + encodeURIComponent(sid) + '&source_type=' + encodeURIComponent(stype); } if (window.Turbo) { window.Turbo.visit(url, { frame: 'watchlists_content' }); } else { window.location.href = url; }" class="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 transition cursor-pointer max-w-[260px] sm:max-w-xs shadow-inner">
                 <option value="all" <%= 'selected' if @source_id == 'all' %>>🎲 Tüm İzlediklerimden Karma (<%= @watched_items.count %> Yapım)</option>
                 <optgroup label="İzlediğiniz Filmler & Diziler">
                   <% @watched_items.each do |w| %>
@@ -353,12 +354,12 @@
         <!-- Quick Source Select Chips Bar -->
         <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
           <span class="text-xs text-zinc-500 shrink-0 font-semibold uppercase tracking-wider">Hızlı Seçim:</span>
-          <%= link_to watchlists_path(tab: "recommendations", source_id: "all", media_type: media_filter_param), class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{@source_id == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
+          <%= link_to watchlists_path(tab: "recommendations", source_id: "all", media_type: media_filter_param), data: { turbo_frame: "watchlists_content" }, class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{@source_id == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
             <span>🎲 Karma Algoritma</span>
           <% end %>
           <% @watched_items.first(8).each do |w| %>
             <% chip_selected = (@source_id.to_s == w.tmdb_id.to_s && (@source_type.blank? || @source_type == w.media_type)) %>
-            <%= link_to watchlists_path(tab: "recommendations", source_id: w.tmdb_id, source_type: w.media_type, media_type: media_filter_param), class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{chip_selected ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
+            <%= link_to watchlists_path(tab: "recommendations", source_id: w.tmdb_id, source_type: w.media_type, media_type: media_filter_param), data: { turbo_frame: "watchlists_content" }, class: "px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 #{chip_selected ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'}" do %>
               <span class="truncate max-w-[130px] sm:max-w-[180px]"><%= w.title %></span>
               <% if w.user_rating.present? %>
                 <span class="text-amber-400 text-[10px] font-bold">★<%= w.user_rating %></span>
@@ -469,4 +470,5 @@
       </div>
     <% end %>
   <% end %>
-</div>
+  </div>
+<% end %>

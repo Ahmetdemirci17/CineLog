@@ -23,6 +23,17 @@ class TvShowsController < ApplicationController
       @user_watchlist_map = {}
     end
 
+    catalog_frame_request = turbo_frame_request_id == "tv_shows_catalog"
+    @hero_item = nil if catalog_frame_request
+
+    if catalog_frame_request
+      @recommended_items = []
+      @recommendation_sources = []
+      @based_on_high_ratings = false
+      @genre_sections = []
+      return
+    end
+
     # Personalized Mixed High-Rated TV Recommendations
     if user_signed_in?
       top_tv_ids = @items.map { |t| t["id"].to_i }.to_set

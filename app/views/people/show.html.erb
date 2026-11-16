@@ -88,48 +88,50 @@
   </div>
 
   <!-- Filmography Section -->
-  <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800/80 pb-4">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-          <span class="w-2.5 h-6 rounded-full bg-purple-500"></span>
-          <span>Filmografi & Rol Aldığı Yapımlar</span>
-        </h2>
-        <p class="text-xs text-zinc-400 mt-1">Popülerliğe ve izleyici beğenisine göre sıralanmıştır.</p>
-      </div>
+  <%= filter_frame_tag "person_filmography" do %>
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <span class="w-2.5 h-6 rounded-full bg-purple-500"></span>
+            <span>Filmografi & Rol Aldığı Yapımlar</span>
+          </h2>
+          <p class="text-xs text-zinc-400 mt-1">Popülerliğe ve izleyici beğenisine göre sıralanmıştır.</p>
+        </div>
 
-      <!-- Filter Tabs -->
-      <div class="inline-flex p-1 rounded-2xl bg-[#121217] border border-zinc-800/80 self-start sm:self-auto shadow-inner">
-        <%= link_to person_path(@person_id, filter: "all"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-          <span>Tümü</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'all' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @all_items.size %></span>
-        <% end %>
-
-        <%= link_to person_path(@person_id, filter: "movie"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'movie' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-          <span>Filmler</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'movie' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @movie_items.size %></span>
-        <% end %>
-
-        <% if @tv_items.any? %>
-          <%= link_to person_path(@person_id, filter: "tv"), class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'tv' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
-            <span>Diziler</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'tv' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @tv_items.size %></span>
+        <!-- Filter Tabs -->
+        <div class="inline-flex p-1 rounded-2xl bg-[#121217] border border-zinc-800/80 self-start sm:self-auto shadow-inner">
+          <%= link_to person_path(@person_id, filter: "all"), data: { turbo_frame: "person_filmography" }, class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'all' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+            <span>Tümü</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'all' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @all_items.size %></span>
           <% end %>
-        <% end %>
-      </div>
-    </div>
 
-    <!-- Works Grid -->
-    <% if @items.empty? %>
-      <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
-        <p class="text-sm font-semibold text-zinc-400">Bu kategoride yapım bulunamadı.</p>
+          <%= link_to person_path(@person_id, filter: "movie"), data: { turbo_frame: "person_filmography" }, class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'movie' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+            <span>Filmler</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'movie' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @movie_items.size %></span>
+          <% end %>
+
+          <% if @tv_items.any? %>
+            <%= link_to person_path(@person_id, filter: "tv"), data: { turbo_frame: "person_filmography" }, class: "px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 #{@filter == 'tv' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}" do %>
+              <span>Diziler</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded-full <%= @filter == 'tv' ? 'bg-black/30' : 'bg-zinc-800' %>"><%= @tv_items.size %></span>
+            <% end %>
+          <% end %>
+        </div>
       </div>
-    <% else %>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-        <% @items.each do |item| %>
-          <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
+
+      <!-- Works Grid -->
+      <% if @items.empty? %>
+        <div class="text-center py-16 bg-[#121217] rounded-3xl border border-zinc-800/80 p-8 shadow-xl">
+          <p class="text-sm font-semibold text-zinc-400">Bu kategoride yapım bulunamadı.</p>
+        </div>
+      <% else %>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+          <% @items.each do |item| %>
+            <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

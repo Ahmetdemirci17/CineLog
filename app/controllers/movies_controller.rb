@@ -30,8 +30,12 @@ class MoviesController < ApplicationController
       @user_watchlist_map = {}
     end
 
+    # Personalized Mixed High-Rated Recommendations and genre shelves sit outside #movies_catalog
+    catalog_frame_request = turbo_frame_request_id == "movies_catalog"
+    @hero_item = nil if catalog_frame_request
+
     # Personalized Mixed High-Rated Recommendations for Homepage
-    if user_signed_in? && @active_tab == "popular"
+    if !catalog_frame_request && user_signed_in? && @active_tab == "popular"
       top_grid_ids = @items.map { |m| m["id"].to_i }.to_set
       rec_data = Watchlist.mixed_recommendations_for(
         current_user,
@@ -50,7 +54,7 @@ class MoviesController < ApplicationController
     end
 
     # Featured genre rows for homepage horizontal carousels (zero cross-shelf duplicates)
-    if @active_tab == "popular"
+    if !catalog_frame_request && @active_tab == "popular"
       featured_genres = [
         { id: 878, name: "Bilimkurgu" },
         { id: 28, name: "Aksiyon" },

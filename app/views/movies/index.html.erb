@@ -63,51 +63,53 @@
   <% end %>
 
   <!-- Catalog Section with Tabs -->
-  <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-b border-[#1f202a] pb-4">
-      <div>
-        <h2 class="text-lg sm:text-xl font-bold text-[#f1f3f7] tracking-tight flex items-center gap-2">
-          <span class="w-2 h-5 rounded bg-[#7c3aed]"></span>
-          Keşfet & İzle
-        </h2>
-        <p class="text-xs text-[#8b90a0] mt-0.5">Kütüphanedeki en güncel film ve diziler.</p>
-      </div>
+  <%= filter_frame_tag "movies_catalog" do %>
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-b border-[#1f202a] pb-4">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-[#f1f3f7] tracking-tight flex items-center gap-2">
+            <span class="w-2 h-5 rounded bg-[#7c3aed]"></span>
+            Keşfet & İzle
+          </h2>
+          <p class="text-xs text-[#8b90a0] mt-0.5">Kütüphanedeki en güncel film ve diziler.</p>
+        </div>
 
-      <!-- Matte Tabs (Scrollable on mobile) -->
-      <div class="overflow-x-auto scrollbar-none pb-1 sm:pb-0 -mx-1 px-1">
-        <div class="inline-flex p-1 rounded-xl bg-[#15161c] border border-[#262833] whitespace-nowrap">
-          <%= link_to root_path(tab: "popular"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'popular' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
-            <span>Popüler Filmler</span>
-          <% end %>
+        <!-- Matte Tabs (Scrollable on mobile) -->
+        <div class="overflow-x-auto scrollbar-none pb-1 sm:pb-0 -mx-1 px-1">
+          <div class="inline-flex p-1 rounded-xl bg-[#15161c] border border-[#262833] whitespace-nowrap">
+            <%= link_to root_path(tab: "popular"), data: { turbo_frame: "movies_catalog" }, class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'popular' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+              <span>Popüler Filmler</span>
+            <% end %>
 
-          <%= link_to root_path(tab: "trending"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'trending' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
-            <span>Trendler</span>
-          <% end %>
+            <%= link_to root_path(tab: "trending"), data: { turbo_frame: "movies_catalog" }, class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'trending' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+              <span>Trendler</span>
+            <% end %>
 
-          <%= link_to root_path(tab: "top_rated"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'top_rated' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
-            <span>En Beğenilenler</span>
-          <% end %>
+            <%= link_to root_path(tab: "top_rated"), data: { turbo_frame: "movies_catalog" }, class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'top_rated' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+              <span>En Beğenilenler</span>
+            <% end %>
 
-          <%= link_to root_path(tab: "tv"), class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
-            <span>Diziler</span>
-          <% end %>
+            <%= link_to root_path(tab: "tv"), data: { turbo_frame: "movies_catalog" }, class: "px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition duration-150 flex items-center gap-1.5 #{@active_tab == 'tv' ? 'bg-[#272236] text-[#a78bfa] border border-[#a78bfa]/25 shadow-sm' : 'text-[#8b90a0] hover:text-[#f1f3f7]'}" do %>
+              <span>Diziler</span>
+            <% end %>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Cards Grid -->
-    <% if @items.empty? %>
-      <div class="text-center py-16 bg-[#15161c] rounded-2xl border border-[#262833]">
-        <p class="text-[#8b90a0]">İçerik yüklenemedi. Lütfen internet bağlantınızı veya TMDB API anahtarınızı kontrol edin.</p>
-      </div>
-    <% else %>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-        <% @items.each do |item| %>
-          <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
+      <!-- Cards Grid -->
+      <% if @items.empty? %>
+        <div class="text-center py-16 bg-[#15161c] rounded-2xl border border-[#262833]">
+          <p class="text-[#8b90a0]">İçerik yüklenemedi. Lütfen internet bağlantınızı veya TMDB API anahtarınızı kontrol edin.</p>
+        </div>
+      <% else %>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+          <% @items.each do |item| %>
+            <%= render "movies/card", item: item, watchlist_map: @user_watchlist_map %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 
   <!-- Category Carousels (Horizontal Scrolling) -->
   <% if @genre_sections.present? && @genre_sections.any? %>
