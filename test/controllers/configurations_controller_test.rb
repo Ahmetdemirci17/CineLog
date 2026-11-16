@@ -44,16 +44,32 @@ class ConfigurationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "meta[name='viewport'][content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover']"
   end
 
-  test "hotwire native request hides footer and keeps mobile navigation" do
-    get new_user_session_path
+  test "hotwire native hides auth navbar and google oauth, keeps mobile nav on main screens" do
+    get root_path
     assert_response :success
     assert_select "nav", minimum: 1
     assert_select "footer", count: 1
 
-    get new_user_session_path, headers: NATIVE_IOS_HEADERS
+    get root_path, headers: NATIVE_IOS_HEADERS
     assert_response :success
     assert_select "nav", minimum: 1
     assert_select "footer", count: 0
+
+    get new_user_session_path
+    assert_response :success
+    assert_select "nav", minimum: 1
+    assert_select "form[action='#{user_google_oauth2_omniauth_authorize_path}']", count: 1
+
+    get new_user_session_path, headers: NATIVE_IOS_HEADERS
+    assert_response :success
+    assert_select "nav", count: 0
+    assert_select "footer", count: 0
+    assert_select "form[action='#{user_google_oauth2_omniauth_authorize_path}']", count: 0
+
+    get new_user_password_path, headers: NATIVE_ANDROID_HEADERS
+    assert_response :success
+    assert_select "nav", count: 0
+    assert_select "h2", text: "Şifremi Unuttum"
   end
 
   test "hotwire native devise sign in recedes modal" do

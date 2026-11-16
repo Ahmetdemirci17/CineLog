@@ -36,10 +36,11 @@
 
   <body class="min-h-full flex flex-col bg-[#0a0a0c] text-[#f1f3f7] selection:bg-[#9333ea] selection:text-white relative">
     <div class="ambient-glow"></div>
-    <%= render "shared/navbar" %>
+    <% show_navbar = !(hotwire_native_app? && devise_controller? && !user_signed_in?) %>
+    <%= render "shared/navbar" if show_navbar %>
 
     <!-- Flash Notifications Container -->
-    <div id="flash-messages" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4">
+    <div id="flash-messages" class="fixed <%= show_navbar ? 'top-20' : 'top-[calc(env(safe-area-inset-top)+1rem)]' %> right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4">
       <% if notice.present? %>
         <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#15161c] border border-[#262833] text-white shadow-lg">
           <div class="flex items-center gap-3">
@@ -62,7 +63,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 w-full max-w-[1536px] mx-auto px-4 sm:px-8 lg:px-12 <%= hotwire_native_app? ? 'pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-24 md:pb-10' : 'py-6 sm:py-10 pb-24 md:pb-10' %>">
+    <main class="flex-1 w-full max-w-[1536px] mx-auto px-4 sm:px-8 lg:px-12 <%= hotwire_native_app? ? (show_navbar ? 'pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-24 md:pb-10' : 'pt-[calc(env(safe-area-inset-top)+1rem)] pb-8') : 'py-6 sm:py-10 pb-24 md:pb-10' %>">
       <%= yield %>
     </main>
 
