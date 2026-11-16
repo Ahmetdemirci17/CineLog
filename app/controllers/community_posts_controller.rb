@@ -33,7 +33,7 @@ class CommunityPostsController < ApplicationController
     @post = current_user.community_posts.new(post_params)
 
     if @post.save
-      redirect_to community_post_path(@post), notice: "Konunuz başarıyla paylaşıldı!"
+      recede_or_redirect_to community_post_path(@post), notice: "Konunuz başarıyla paylaşıldı!"
     else
       render :new, status: :unprocessable_entity
     end
@@ -42,7 +42,7 @@ class CommunityPostsController < ApplicationController
   def destroy
     if @community_post.user == current_user
       @community_post.destroy
-      redirect_to community_posts_path, notice: "Konu silindi."
+      recede_or_redirect_to community_posts_path, notice: "Konu silindi."
     else
       redirect_to community_posts_path, alert: "Bu işlem için yetkiniz yok."
     end

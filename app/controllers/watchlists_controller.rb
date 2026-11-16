@@ -78,7 +78,7 @@ class WatchlistsController < ApplicationController
     if @watchlist.save
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_back fallback_location: watchlists_path, notice: "#{@watchlist.title} listenize eklendi." }
+        format.html { refresh_or_redirect_back_or_to watchlists_path, notice: "#{@watchlist.title} listenize eklendi." }
       end
     else
       render_watchlist_error
@@ -95,7 +95,7 @@ class WatchlistsController < ApplicationController
     if @watchlist.update(update_params)
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_back fallback_location: watchlists_path, notice: "Durum güncellendi." }
+        format.html { refresh_or_redirect_back_or_to watchlists_path, notice: "Durum güncellendi." }
       end
     else
       render_watchlist_error
@@ -109,7 +109,7 @@ class WatchlistsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_back fallback_location: watchlists_path, notice: "Listeden kaldırıldı." }
+      format.html { refresh_or_redirect_back_or_to watchlists_path, notice: "Listeden kaldırıldı." }
     end
   end
 

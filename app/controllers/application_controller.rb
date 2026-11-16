@@ -1,9 +1,11 @@
 class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  allow_browser versions: :modern, unless: :hotwire_native_app?
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
+
+  helper_method :hotwire_native_app?, :turbo_native_app?
 
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :prevent_caching_on_auth_pages, if: :devise_controller?
@@ -11,6 +13,23 @@ class ApplicationController < ActionController::Base
   rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_authenticity_token
 
   protected
+
+  def hotwire_native_app?
+    request.user_agent.to_s.match?(/(Turbo|Hotwire) Native/i)
+  end
+  alias_method :turbo_native_app?, :hotwire_native_app?
+
+  def after_sign_in_path_for(resource)
+    return turbo_recede_historical_location_url if hotwire_native_app?
+
+    super
+  end
+
+  def after_sign_out_path_for(resource_or_scope)
+    return turbo_refresh_historical_location_url if hotwire_native_app?
+
+    super
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:username])

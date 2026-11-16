@@ -32,6 +32,14 @@ Rails.application.routes.draw do
     resources :watchlists, only: [:index, :destroy]
   end
 
+  # Hotwire Native Path Configuration
+  resources :configurations, only: [] do
+    collection do
+      get :ios_v1, defaults: { format: :json }
+      get :android_v1, defaults: { format: :json }
+    end
+  end
+
   # Render dynamic PWA files from app/views/pwa/*
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

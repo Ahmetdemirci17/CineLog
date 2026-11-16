@@ -9,7 +9,7 @@ class CommunityRepliesController < ApplicationController
     if @reply.save
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to community_post_path(@community_post), notice: "Yanıtınız gönderildi." }
+        format.html { refresh_or_redirect_to community_post_path(@community_post), notice: "Yanıtınız gönderildi." }
       end
     else
       respond_to do |format|
@@ -25,7 +25,7 @@ class CommunityRepliesController < ApplicationController
       @reply.destroy
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to community_post_path(@community_post), notice: "Yanıt silindi." }
+        format.html { refresh_or_redirect_to community_post_path(@community_post), notice: "Yanıt silindi." }
       end
     else
       redirect_to community_post_path(@community_post), alert: "Yetkiniz yok."

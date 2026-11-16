@@ -6,7 +6,7 @@
   </div>
 
   <div class="bg-[#15161c] p-6 sm:p-8 rounded-2xl border border-[#262833] shadow-md">
-    <%= form_with model: @post, class: "space-y-5" do |f| %>
+    <%= form_with model: @post, class: "space-y-5", data: { controller: "bridge--form" } do |f| %>
       <% if @post.errors.any? %>
         <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
           <ul class="list-disc pl-4 space-y-1">
@@ -41,7 +41,7 @@
 
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#1f202a]">
         <%= link_to "İptal", community_posts_path, class: "px-3.5 py-2 text-xs font-medium text-[#8b90a0] hover:text-white transition" %>
-        <%= f.submit "Konuyu Paylaş", class: "px-5 py-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold text-xs rounded-xl shadow-sm transition duration-150 cursor-pointer" %>
+        <%= f.submit "Konuyu Paylaş", data: { "bridge--form-target": "submit", bridge_title: "Konuyu Paylaş" }, class: "px-5 py-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold text-xs rounded-xl shadow-sm transition duration-150 cursor-pointer" %>
       </div>
     <% end %>
   </div>

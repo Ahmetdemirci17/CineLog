@@ -20,7 +20,7 @@
       <p class="mt-1.5 text-xs text-[#8b90a0]">İzleme listenize ve topluluğa erişmek için giriş yapın.</p>
     </div>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-6 space-y-4" }) do |f| %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-6 space-y-4", data: { controller: "bridge--form" } }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
       <div>
@@ -46,7 +46,7 @@
       <% end %>
 
       <div>
-        <%= f.submit "Giriş Yap", class: "w-full py-2.5 px-4 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold rounded-xl text-xs sm:text-sm shadow-sm transition duration-150 cursor-pointer" %>
+        <%= f.submit "Giriş Yap", data: { "bridge--form-target": "submit", bridge_title: "Giriş Yap" }, class: "w-full py-2.5 px-4 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-semibold rounded-xl text-xs sm:text-sm shadow-sm transition duration-150 cursor-pointer" %>
       </div>
     <% end %>
 
