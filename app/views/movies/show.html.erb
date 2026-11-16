@@ -177,6 +177,7 @@
             closeHeroTrailer();
           }
         });
+        document.addEventListener('turbo:before-cache', closeHeroTrailer);
       </script>
     <% end %>
   </div>

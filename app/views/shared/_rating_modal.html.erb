@@ -1,4 +1,4 @@
-<div id="rating-modal" data-controller="rating-modal" data-rating-modal-target="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+<div id="rating-modal" data-controller="rating-modal" data-rating-modal-target="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] overflow-y-auto">
   <!-- Backdrop -->
   <div data-action="click->rating-modal#close" class="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"></div>
 
@@ -47,13 +47,13 @@
     <!-- Rating Section -->
     <div class="flex flex-col items-center gap-3 py-1">
       <!-- Stars (1 - 10) -->
-      <div class="flex items-center justify-between w-full max-w-sm px-1" data-rating-modal-target="starsContainer" data-action="mouseleave->rating-modal#resetHover">
+      <div class="grid grid-cols-5 sm:flex sm:items-center sm:justify-between gap-2 sm:gap-0 w-full max-w-sm px-1" data-rating-modal-target="starsContainer" data-action="mouseleave->rating-modal#resetHover">
         <% (1..10).each do |score| %>
           <button type="button"
             data-rating-modal-target="star"
             data-rating="<%= score %>"
             data-action="mouseenter->rating-modal#hoverStar click->rating-modal#selectStar"
-            class="p-1 sm:p-1.5 text-zinc-600 hover:text-amber-400 transition-all duration-150 transform hover:scale-125 focus:outline-none cursor-pointer"
+            class="min-h-[44px] flex items-center justify-center p-2 sm:p-1.5 rounded-xl bg-[#1c1d25]/70 sm:bg-transparent text-zinc-600 hover:text-amber-400 transition-all duration-150 transform hover:scale-125 focus:outline-none cursor-pointer"
             title="<%= score %> / 10">
             <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-colors" viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>

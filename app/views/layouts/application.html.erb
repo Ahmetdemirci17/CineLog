@@ -40,7 +40,7 @@
     <%= render "shared/navbar" if show_navbar %>
 
     <!-- Flash Notifications Container -->
-    <div id="flash-messages" class="fixed <%= show_navbar ? 'top-20' : 'top-[calc(env(safe-area-inset-top)+1rem)]' %> right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4">
+    <div id="flash-messages" class="fixed <%= show_navbar ? 'top-20' : 'top-[calc(env(safe-area-inset-top)+1rem)]' %> inset-x-4 mx-auto sm:mx-0 sm:left-auto sm:right-4 sm:w-full max-w-md z-50 flex flex-col gap-2 pointer-events-none">
       <% if notice.present? %>
         <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#15161c] border border-[#262833] text-white shadow-lg">
           <div class="flex items-center gap-3">
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 w-full max-w-[1536px] mx-auto px-4 sm:px-8 lg:px-12 <%= hotwire_native_app? ? (show_navbar ? 'pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-24 md:pb-10' : 'pt-[calc(env(safe-area-inset-top)+1rem)] pb-8') : 'py-6 sm:py-10 pb-24 md:pb-10' %>">
+    <main class="flex-1 w-full max-w-[1536px] mx-auto px-4 sm:px-8 lg:px-12 <%= hotwire_native_app? ? (show_navbar ? 'pt-5 sm:pt-8 pb-24 md:pb-10' : 'pt-[calc(env(safe-area-inset-top)+1rem)] pb-8') : 'py-6 sm:py-10 pb-24 md:pb-10' %>">
       <%= yield %>
     </main>
 
@@ -83,13 +83,15 @@
 
     <%= render "shared/rating_modal" if user_signed_in? %>
 
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .catch(err => console.log('PWA ServiceWorker error:', err));
-        });
-      }
-    </script>
+    <% unless hotwire_native_app? %>
+      <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+              .catch(err => console.log('PWA ServiceWorker error:', err));
+          });
+        }
+      </script>
+    <% end %>
   </body>
 </html>

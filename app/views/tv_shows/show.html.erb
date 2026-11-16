@@ -175,6 +175,7 @@
             closeTvHeroTrailer();
           }
         });
+        document.addEventListener('turbo:before-cache', closeTvHeroTrailer);
       </script>
     <% end %>
   </div>

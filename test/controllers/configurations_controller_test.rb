@@ -112,4 +112,20 @@ class ConfigurationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to turbo_recede_historical_location_url(notice: "Konunuz başarıyla paylaşıldı!")
   end
+
+  test "hotwire native mobile layout uses 5-tab nav, confirm logout, safe flash, and skips service worker" do
+    sign_in users(:one)
+
+    get root_path
+    assert_response :success
+    assert_includes response.body, "navigator.serviceWorker.register"
+
+    get root_path, headers: NATIVE_ANDROID_HEADERS
+    assert_response :success
+    assert_not_includes response.body, "navigator.serviceWorker.register"
+    assert_select "#flash-messages.inset-x-4", count: 1
+    assert_select "form[action='#{destroy_user_session_path}'] button[data-turbo-confirm]", count: 1
+    assert_select "div.md\\:hidden div.grid-cols-5 a", count: 5
+    assert_select "#rating-modal div.grid-cols-5 button[data-rating]", count: 10
+  end
 end
