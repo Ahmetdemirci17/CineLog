@@ -27,6 +27,14 @@ class ConfigurationsController < ApplicationController
           }
         },
         {
+          patterns: [ "/mobile_auth/redeem" ],
+          properties: {
+            context: "default",
+            presentation: "replace_root",
+            pull_to_refresh_enabled: false
+          }
+        },
+        {
           patterns: MODAL_PATTERNS,
           properties: {
             context: "modal",
@@ -47,6 +55,15 @@ class ConfigurationsController < ApplicationController
             context: "default",
             uri: "hotwire://fragment/web",
             pull_to_refresh_enabled: true
+          }
+        },
+        {
+          patterns: [ "/mobile_auth/redeem" ],
+          properties: {
+            context: "default",
+            uri: "hotwire://fragment/web",
+            presentation: "replace_root",
+            pull_to_refresh_enabled: false
           }
         },
         {

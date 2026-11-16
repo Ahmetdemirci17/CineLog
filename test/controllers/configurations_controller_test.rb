@@ -65,11 +65,30 @@ class ConfigurationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "nav", count: 0
     assert_select "footer", count: 0
     assert_select "form[action='#{user_google_oauth2_omniauth_authorize_path}']", count: 0
+    assert_select "a[href='#{mobile_auth_start_path}']", count: 1
 
     get new_user_password_path, headers: NATIVE_ANDROID_HEADERS
     assert_response :success
     assert_select "nav", count: 0
     assert_select "h2", text: "Şifremi Unuttum"
+  end
+
+  test "hotwire native custom tabs google oauth start and token redeem" do
+    get mobile_auth_start_path
+    assert_response :success
+    assert_select "form#mobile-oauth-form[action='#{user_google_oauth2_omniauth_authorize_path}'][method='post']", count: 1
+
+    user = users(:one)
+    token = MobileAuthController.generate_token_for(user)
+
+    get mobile_auth_redeem_path(token: token), headers: NATIVE_ANDROID_HEADERS
+    assert_redirected_to root_path
+
+    get mobile_auth_redeem_path(token: "invalid-token"), headers: NATIVE_ANDROID_HEADERS
+    assert_redirected_to new_user_session_path
+
+    get mobile_auth_redeem_path(error: "cancelled"), headers: NATIVE_ANDROID_HEADERS
+    assert_redirected_to new_user_session_path
   end
 
   test "hotwire native devise sign in recedes modal" do

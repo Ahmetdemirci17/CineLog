@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
+  get "mobile_auth/start", to: "mobile_auth#start", as: :mobile_auth_start
+  get "mobile_auth/redeem", to: "mobile_auth#redeem", as: :mobile_auth_redeem
 
   root "movies#index"
 
