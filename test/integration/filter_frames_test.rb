@@ -160,8 +160,8 @@ class FilterFramesTest < ActionDispatch::IntegrationTest
         assert_select "turbo-frame#genre_catalog.block[target='_top'][data-turbo-action='advance']", count: 1
         assert_select "turbo-frame#genre_catalog a[href='#{genres_path}']:not([data-turbo-frame])", count: 1
         assert_select "turbo-frame#genre_catalog a[href='#{genre_path(28, sort_by: 'vote_average.desc', page: 1)}'][data-turbo-frame='genre_catalog']", count: 1
-        assert_select "turbo-frame#genre_catalog a[href='#{genre_path(28, page: 2, sort_by: 'popularity.desc')}'][data-turbo-frame='genre_catalog']", minimum: 1
-        assert_select "turbo-frame#genre_catalog form[action='#{genre_path(28)}'][data-turbo-frame='genre_catalog']", count: 1
+        assert_select "turbo-frame#genre_catalog [data-turbo-scroll-top='true'] a[href='#{genre_path(28, page: 2, sort_by: 'popularity.desc')}'][data-turbo-frame='genre_catalog']", minimum: 1
+        assert_select "turbo-frame#genre_catalog [data-turbo-scroll-top='true'] form[action='#{genre_path(28)}'][data-turbo-frame='genre_catalog']", count: 1
 
         get genre_path(28, sort_by: "vote_average.desc", page: 1), headers: NATIVE_ANDROID_HEADERS
         assert_response :success
