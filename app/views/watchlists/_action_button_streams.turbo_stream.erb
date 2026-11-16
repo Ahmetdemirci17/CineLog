@@ -1,0 +1,7 @@
+<%= turbo_stream.replace_all ".watchlist-action-card-#{tmdb_id}-#{media_type}" do %>
+  <%= render "watchlists/action_button", tmdb_id: tmdb_id, media_type: media_type, title: title, poster_path: poster_path, watchlist_item: watchlist_item, hero: false %>
+<% end %>
+
+<%= turbo_stream.replace_all ".watchlist-action-hero-#{tmdb_id}-#{media_type}" do %>
+  <%= render "watchlists/action_button", tmdb_id: tmdb_id, media_type: media_type, title: title, poster_path: poster_path, watchlist_item: watchlist_item, hero: true %>
+<% end %>

@@ -16,8 +16,11 @@ class Watchlist < ApplicationRecord
 
   def fetch_metadata
     service = TmdbService.new
-    details = Rails.cache.fetch("stats_details/#{media_type}/#{tmdb_id}", expires_in: 7.days) do
-      media_type == "tv" ? service.tv_details(tmdb_id) : service.movie_details(tmdb_id)
+    cache_key = "stats_details/#{media_type}/#{tmdb_id}"
+    details = Rails.cache.read(cache_key)
+    unless details.is_a?(Hash) && details["id"].present?
+      details = media_type == "tv" ? service.tv_details(tmdb_id) : service.movie_details(tmdb_id)
+      Rails.cache.write(cache_key, details, expires_in: 7.days) if details.is_a?(Hash) && details["id"].present?
     end
     if details.is_a?(Hash) && details["id"].present?
       self.runtime ||= media_type == "tv" ? (details["episode_run_time"]&.first || 45) : (details["runtime"] || 100)
@@ -71,4 +74,104 @@ class Watchlist < ApplicationRecord
       top_genres: top_genres
     }
   end
+
+  # Builds an interleaved, diverse recommendation list driven by the user's highest-rated watched titles.
+  # Never uses disliked/low-rated (<= 6) titles as recommendation sources.
+  def self.mixed_recommendations_for(user, service: TmdbService.new, media_type: nil, limit: 15, max_sources: 6, exclude_ids: Set.new)
+    return { items: [], sources: [], based_on_high_ratings: false } unless user
+
+    scope = user.watchlists.watched
+    scope = scope.where(media_type: media_type) if %w[movie tv].include?(media_type.to_s)
+    watched_list = scope.to_a
+    return { items: [], sources: [], based_on_high_ratings: false } if watched_list.empty?
+
+    high_rated = watched_list.select { |w| w.user_rating.to_i >= 8 }
+    good_rated = watched_list.select { |w| w.user_rating.to_i >= 7 }
+    unrated = watched_list.select { |w| w.user_rating.nil? }
+
+    candidate_pool, based_on_high = if high_rated.size >= 2
+      [high_rated, true]
+    elsif good_rated.any?
+      [(good_rated + unrated.first(2)).uniq, true]
+    elsif unrated.any?
+      [unrated, false]
+    else
+      [watched_list.sort_by { |w| -w.user_rating.to_i }.first(3), false]
+    end
+
+    chosen_sources = weighted_sample_sources(candidate_pool, max_sources)
+    blocked_pairs = user.watchlists.pluck(:tmdb_id, :media_type).to_set
+    blocked_ids = Set.new(exclude_ids.map(&:to_i))
+
+    per_source_items = {}
+    chosen_sources.each do |src|
+      res = src.media_type == "tv" ? service.tv_recommendations(src.tmdb_id) : service.movie_recommendations(src.tmdb_id)
+      raw_items = res.is_a?(Hash) ? (res["results"] || []) : []
+
+      cleaned = raw_items.filter_map do |item|
+        next unless item.is_a?(Hash) && item["id"].present?
+        iid = item["id"].to_i
+        mtype = (item["media_type"].presence || src.media_type).to_s
+        next if blocked_pairs.include?([iid, mtype]) || blocked_ids.include?(iid)
+        if item.key?("vote_average") && item["vote_count"].to_i > 0
+          next if item["vote_average"].to_f < 5.8
+        end
+
+        item.merge("_recommended_by" => src.title, "media_type" => mtype)
+      end
+
+      per_source_items[src.id] = cleaned
+    end
+
+    interleaved = []
+    seen = Set.new
+    max_len = per_source_items.values.map(&:size).max || 0
+    (0...max_len).each do |idx|
+      chosen_sources.each do |src|
+        candidate = per_source_items[src.id]&.[](idx)
+        next unless candidate
+        key = [candidate["id"].to_i, candidate["media_type"]]
+        next if seen.include?(key)
+
+        seen.add(key)
+        interleaved << candidate
+        break if interleaved.size >= limit
+      end
+      break if interleaved.size >= limit
+    end
+
+    {
+      items: interleaved.first(limit),
+      sources: chosen_sources,
+      based_on_high_ratings: based_on_high
+    }
+  end
+
+  def self.weighted_sample_sources(pool, count)
+    return pool.shuffle if pool.size <= count
+
+    remaining = pool.dup
+    picked = []
+    count.times do
+      break if remaining.empty?
+      weights = remaining.map do |w|
+        r = w.user_rating.to_i
+        r >= 7 ? ((r - 5) ** 2) : 3
+      end
+      total_w = weights.sum.to_f
+      target = rand * total_w
+      running = 0.0
+      chosen_idx = 0
+      weights.each_with_index do |weight, idx|
+        running += weight
+        if target <= running
+          chosen_idx = idx
+          break
+        end
+      end
+      picked << remaining.delete_at(chosen_idx)
+    end
+    picked
+  end
+  private_class_method :weighted_sample_sources
 end

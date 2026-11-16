@@ -1,8 +1,19 @@
-<%= turbo_stream.replace "watchlist_action_#{@watchlist.tmdb_id}_#{@watchlist.media_type}" do %>
-  <%= render "watchlists/action_button", tmdb_id: @watchlist.tmdb_id, media_type: @watchlist.media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: @watchlist %>
-<% end %>
+<%= render "watchlists/action_button_streams", tmdb_id: @watchlist.tmdb_id, media_type: @watchlist.media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: @watchlist %>
 
-<%= turbo_stream.remove "watchlist_card_#{@watchlist.id}" %>
+<% if @watchlist.saved_change_to_status? %>
+  <%= turbo_stream.remove "watchlist_card_#{@watchlist.id}" %>
+<% else %>
+  <%= turbo_stream.replace "watchlist_card_rating_#{@watchlist.id}" do %>
+    <div id="watchlist_card_rating_<%= @watchlist.id %>">
+      <% if @watchlist.user_rating.present? %>
+        <div class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-amber-400/30 flex items-center gap-1 text-amber-400 text-xs font-bold shadow z-10">
+          <span>★</span>
+          <span><%= @watchlist.user_rating %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
 
 <%= turbo_stream.prepend "flash-messages" do %>
   <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#121217] border border-[rgba(168,85,247,0.3)] text-white shadow-[0_0_20px_rgba(168,85,247,0.2)]">

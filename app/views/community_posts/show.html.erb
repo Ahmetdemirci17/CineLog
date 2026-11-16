@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <% if @attached_media.present? %>
+    <% if @attached_media.present? && @attached_media["id"].present? && (@attached_media["title"] || @attached_media["name"]).present? %>
       <%
         media_title = @attached_media["title"] || @attached_media["name"]
         media_poster = @attached_media["poster_path"]

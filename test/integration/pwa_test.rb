@@ -23,13 +23,13 @@ class PwaTest < ActionDispatch::IntegrationTest
   test "service worker route returns javascript" do
     get pwa_service_worker_path(format: :js)
     assert_response :success
-    assert_match "cinelog-v1", response.body
+    assert_match "cinelog-v2", response.body
     assert_match "addEventListener('install'", response.body
     assert_match "addEventListener('fetch'", response.body
 
     get "/service-worker.js"
     assert_response :success
-    assert_match "cinelog-v1", response.body
+    assert_match "cinelog-v2", response.body
   end
 
   test "application layout contains PWA meta and link tags" do

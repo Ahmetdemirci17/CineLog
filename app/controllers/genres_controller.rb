@@ -12,8 +12,8 @@ class GenresController < ApplicationController
 
   def show
     @genre_id = params[:id]
-    @page = [params[:page].to_i, 1].max
-    @sort_by = params[:sort_by].presence || "popularity.desc"
+    @page = sanitized_page
+    @sort_by = %w[popularity.desc vote_average.desc primary_release_date.desc].include?(params[:sort_by]) ? params[:sort_by] : "popularity.desc"
 
     service = TmdbService.new
     all_genres = service.genres["genres"] || []

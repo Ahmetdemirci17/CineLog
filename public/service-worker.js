@@ -1,5 +1,7 @@
-const CACHE_NAME = 'cinelog-v1';
+const CACHE_NAME = 'cinelog-v2';
 const OFFLINE_URL = '/';
+const NO_CACHE_PREFIXES = ['/admin', '/users', '/watchlists', '/u/', '/profil/', '/search/suggestions'];
+const STATIC_DESTINATIONS = new Set(['style', 'script', 'image', 'font', 'manifest']);
 
 // Core assets to cache immediately on install
 const PRECACHE_ASSETS = [
@@ -45,8 +47,8 @@ self.addEventListener('fetch', (event) => {
   // Skip non-http/https requests
   if (!url.protocol.startsWith('http')) return;
 
-  // Do not cache admin or authentication routes
-  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/users/auth')) {
+  // Do not cache admin, authentication, or user-specific dynamic routes
+  if (NO_CACHE_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) {
     return;
   }
 
@@ -55,7 +57,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          if (response.status === 200) {
+          if (response.status === 200 && url.origin === self.location.origin) {
             const copy = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
           }
@@ -67,6 +69,12 @@ self.addEventListener('fetch', (event) => {
           });
         })
     );
+    return;
+  }
+
+  // Only cache static assets (never Turbo Drive / HTML / Turbo Stream fetches)
+  const isStaticAsset = STATIC_DESTINATIONS.has(event.request.destination) || url.pathname.startsWith('/assets/');
+  if (!isStaticAsset) {
     return;
   }
 

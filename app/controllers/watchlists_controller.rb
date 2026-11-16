@@ -24,62 +24,39 @@ class WatchlistsController < ApplicationController
 
     if @active_tab == "recommendations"
       service = TmdbService.new
-      all_user_ids = current_user.watchlists.pluck(:tmdb_id).to_set
+      all_user_pairs = current_user.watchlists.pluck(:tmdb_id, :media_type).to_set
 
       if params[:source_id].present? && params[:source_id] != "all"
-        @source_item = base_watched.find_by(tmdb_id: params[:source_id])
+        source_id, source_type = parse_recommendation_source(params[:source_id], params[:source_type])
+        source_scope = source_type ? base_watched.where(media_type: source_type) : base_watched
+        @source_item = source_scope.find_by(tmdb_id: source_id)
         if @source_item
           @source_id = @source_item.tmdb_id
+          @source_type = @source_item.media_type
           @source_title = @source_item.title
           res = @source_item.media_type == "tv" ? service.tv_recommendations(@source_item.tmdb_id) : service.movie_recommendations(@source_item.tmdb_id)
-          items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
-          items.each do |item|
-            item["_recommended_by"] = @source_item.title
-            item["media_type"] ||= @source_item.media_type
+          items = (res["results"] || []).filter_map do |item|
+            mtype = (item["media_type"].presence || @source_item.media_type).to_s
+            next if all_user_pairs.include?([item["id"].to_i, mtype])
+            item.merge("_recommended_by" => @source_item.title, "media_type" => mtype)
           end
           @recommendations = items.first(30)
         else
           @recommendations = []
         end
       else
-        # Default or "all" -> Tüm İzlediklerimden Karma (Interleaved diverse blend across watched library)
+        # Default or "all" -> Yüksek Puanlı İzlediklerimden Karma (Interleaved high-rating blend)
         @source_id = "all"
-        @source_title = @media_filter == "tv" ? "İzlediğim Dizilerden (Karma)" : (@media_filter == "movie" ? "İzlediğim Filmlerden (Karma)" : "Tüm İzlediklerim (Karma)")
+        @source_title = @media_filter == "tv" ? "Beğendiğim Dizilerden (Karma)" : (@media_filter == "movie" ? "Beğendiğim Filmlerden (Karma)" : "Beğendiğim Yapımlardan (Karma)")
 
-        if @watched_items.any?
-          all_watched_array = @watched_items.to_a
-          # Truly random & diverse selection across all 60+ watched items on each refresh
-          rated_items = all_watched_array.select { |w| w.user_rating.present? }.sort_by { |w| -w.user_rating.to_i }.first(4)
-          remaining = all_watched_array - rated_items
-          sample_count = [remaining.size, 12 - rated_items.size].min
-          sources = (rated_items + remaining.sample(sample_count)).shuffle
-
-          # Fetch recommendations for each source
-          per_source_items = {}
-          sources.each do |src|
-            res = src.media_type == "tv" ? service.tv_recommendations(src.tmdb_id) : service.movie_recommendations(src.tmdb_id)
-            items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }
-            items.each do |item|
-              item["_recommended_by"] = src.title
-              item["media_type"] ||= src.media_type
-            end
-            per_source_items[src.id] = items
-          end
-
-          # Interleave (Round-robin) so recommendations are evenly balanced across all sources
-          interleaved = []
-          max_len = per_source_items.values.map(&:size).max || 0
-          (0...max_len).each do |idx|
-            sources.each do |src|
-              item = per_source_items[src.id]&.[](idx)
-              interleaved << item if item
-            end
-          end
-
-          @recommendations = interleaved.uniq { |m| m["id"] }.first(36)
-        else
-          @recommendations = []
-        end
+        rec_data = Watchlist.mixed_recommendations_for(
+          current_user,
+          service: service,
+          media_type: (@media_filter == "all" ? nil : @media_filter),
+          limit: 36,
+          max_sources: 10
+        )
+        @recommendations = rec_data[:items]
       end
     else
       @recommendations = []
@@ -104,10 +81,7 @@ class WatchlistsController < ApplicationController
         format.html { redirect_back fallback_location: watchlists_path, notice: "#{@watchlist.title} listenize eklendi." }
       end
     else
-      respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("watchlist_errors", partial: "shared/error", locals: { message: @watchlist.errors.full_messages.join(", ") }) }
-        format.html { redirect_back fallback_location: watchlists_path, alert: @watchlist.errors.full_messages.join(", ") }
-      end
+      render_watchlist_error
     end
   end
 
@@ -124,10 +98,7 @@ class WatchlistsController < ApplicationController
         format.html { redirect_back fallback_location: watchlists_path, notice: "Durum güncellendi." }
       end
     else
-      respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("watchlist_errors", partial: "shared/error", locals: { message: @watchlist.errors.full_messages.join(", ") }) }
-        format.html { redirect_back fallback_location: watchlists_path, alert: @watchlist.errors.full_messages.join(", ") }
-      end
+      render_watchlist_error
     end
   end
 
@@ -146,6 +117,26 @@ class WatchlistsController < ApplicationController
 
   def set_watchlist
     @watchlist = current_user.watchlists.find(params[:id])
+  end
+
+  def parse_recommendation_source(raw_source, raw_type)
+    str = raw_source.to_s
+    if str.include?(":")
+      parsed_type, parsed_id = str.split(":", 2)
+      return [parsed_id, %w[movie tv].include?(parsed_type) ? parsed_type : nil]
+    end
+    [str, %w[movie tv].include?(raw_type) ? raw_type : nil]
+  end
+
+  def render_watchlist_error
+    message = @watchlist.errors.full_messages.join(", ")
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.prepend("flash-messages", partial: "shared/error", locals: { message: message, toast: true }),
+               status: :unprocessable_entity
+      end
+      format.html { redirect_back fallback_location: watchlists_path, alert: message }
+    end
   end
 
   def watchlist_params

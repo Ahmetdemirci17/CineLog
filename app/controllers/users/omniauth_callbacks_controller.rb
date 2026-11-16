@@ -2,14 +2,21 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   skip_before_action :verify_authenticity_token, only: :failure
 
   def google_oauth2
-    @user = User.from_omniauth(request.env['omniauth.auth'])
+    auth = request.env["omniauth.auth"]
+    if auth.blank?
+      redirect_to new_user_session_path, alert: "Google kimlik doğrulama bilgisi alınamadı."
+      return
+    end
 
-    if @user.persisted?
-      flash[:notice] = I18n.t 'devise.omniauth_callbacks.success', kind: 'Google', default: 'Google ile başarıyla giriş yapıldı.'
+    @user = User.from_omniauth(auth)
+
+    if @user&.persisted?
+      flash[:notice] = I18n.t "devise.omniauth_callbacks.success", kind: "Google", default: "Google ile başarıyla giriş yapıldı."
       sign_in_and_redirect @user, event: :authentication
     else
-      session['devise.google_data'] = request.env['omniauth.auth'].except('extra')
-      redirect_to new_user_registration_url, alert: @user.errors.full_messages.join("\n").presence || "Google ile hesap oluşturulamadı."
+      session["devise.google_data"] = auth.respond_to?(:except) ? auth.except("extra") : nil
+      alert_msg = @user&.errors&.full_messages&.join("\n").presence || "Google ile hesap oluşturulamadı."
+      redirect_to new_user_registration_url, alert: alert_msg
     end
   end
 

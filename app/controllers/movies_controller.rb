@@ -1,23 +1,24 @@
 class MoviesController < ApplicationController
   def index
     @active_tab = params[:tab].presence || "popular"
+    page = sanitized_page
     service = TmdbService.new
 
     case @active_tab
     when "trending"
-      response = service.trending(page: params[:page] || 1)
+      response = service.trending(page: page)
       @items = response["results"] || []
       @hero_item = @items.first
     when "top_rated"
-      response = service.top_rated_movies(page: params[:page] || 1)
+      response = service.top_rated_movies(page: page)
       @items = response["results"] || []
       @hero_item = @items.first
     when "tv"
-      response = service.popular_tv(page: params[:page] || 1)
+      response = service.popular_tv(page: page)
       @items = response["results"] || []
       @hero_item = @items.first
     else # popular movies
-      response = service.popular_movies(page: params[:page] || 1)
+      response = service.popular_movies(page: page)
       @items = response["results"] || []
       @hero_item = @items.first
     end
@@ -29,21 +30,26 @@ class MoviesController < ApplicationController
       @user_watchlist_map = {}
     end
 
-    # Personalized Recommendations for Homepage
+    # Personalized Mixed High-Rated Recommendations for Homepage
     if user_signed_in? && @active_tab == "popular"
-      @recommendation_source = current_user.watchlists.watched.reorder(user_rating: :desc, watched_at: :desc).first
-      if @recommendation_source
-        res = @recommendation_source.media_type == "tv" ? service.tv_recommendations(@recommendation_source.tmdb_id) : service.movie_recommendations(@recommendation_source.tmdb_id)
-        all_user_ids = current_user.watchlists.pluck(:tmdb_id).to_set
-        @recommended_items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }.first(15)
-      else
-        @recommended_items = []
-      end
+      top_grid_ids = @items.map { |m| m["id"].to_i }.to_set
+      rec_data = Watchlist.mixed_recommendations_for(
+        current_user,
+        service: service,
+        limit: 15,
+        max_sources: 6,
+        exclude_ids: top_grid_ids
+      )
+      @recommended_items = rec_data[:items]
+      @recommendation_sources = rec_data[:sources]
+      @based_on_high_ratings = rec_data[:based_on_high_ratings]
     else
       @recommended_items = []
+      @recommendation_sources = []
+      @based_on_high_ratings = false
     end
 
-    # Featured genre rows for homepage horizontal carousels
+    # Featured genre rows for homepage horizontal carousels (zero cross-shelf duplicates)
     if @active_tab == "popular"
       featured_genres = [
         { id: 878, name: "Bilimkurgu" },
@@ -51,14 +57,12 @@ class MoviesController < ApplicationController
         { id: 18, name: "Dram" },
         { id: 35, name: "Komedi" }
       ]
-      @genre_sections = featured_genres.map do |genre|
-        res = service.discover_by_genre(genre[:id], sort_by: "vote_average.desc")
-        {
-          id: genre[:id],
-          name: genre[:name],
-          items: (res["results"] || []).first(15)
-        }
-      end
+      already_shown_ids = (@items + @recommended_items).map { |m| m["id"].to_i }.to_set
+      @genre_sections = service.build_unique_genre_sections(
+        featured_genres,
+        per_section: 15,
+        exclude_ids: already_shown_ids
+      )
     else
       @genre_sections = []
     end
@@ -72,8 +76,14 @@ class MoviesController < ApplicationController
     end
 
     @media_type = "movie"
+    @watchlist_map = {}
     if user_signed_in?
       @watchlist_item = current_user.watchlists.find_by(tmdb_id: @movie["id"], media_type: "movie")
+      rec_ids = Array(@movie.dig("recommendations", "results")).first(5).filter_map { |r| r["id"] }
+      if rec_ids.any?
+        @watchlist_map = current_user.watchlists.where(tmdb_id: rec_ids, media_type: "movie")
+                                     .index_by { |w| [w.tmdb_id, w.media_type] }
+      end
     end
     @community_posts = CommunityPost.where(tmdb_id: @movie["id"], media_type: "movie").recent.limit(5)
   end
@@ -81,7 +91,7 @@ class MoviesController < ApplicationController
   def search
     @query = params[:query].to_s.strip
     if @query.present?
-      response = TmdbService.new.search_multi(query: @query, page: params[:page] || 1)
+      response = TmdbService.new.search_multi(query: @query, page: sanitized_page)
       all_results = response["results"] || []
 
       # Separate people and movies/series

@@ -1,6 +1,4 @@
-<%= turbo_stream.replace "watchlist_action_#{@tmdb_id}_#{@media_type}" do %>
-  <%= render "watchlists/action_button", tmdb_id: @tmdb_id, media_type: @media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: nil %>
-<% end %>
+<%= render "watchlists/action_button_streams", tmdb_id: @tmdb_id, media_type: @media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: nil %>
 
 <%= turbo_stream.remove "watchlist_card_#{@watchlist.id}" %>
 

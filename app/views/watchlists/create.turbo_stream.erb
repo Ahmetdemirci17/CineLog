@@ -1,6 +1,4 @@
-<%= turbo_stream.replace "watchlist_action_#{@watchlist.tmdb_id}_#{@watchlist.media_type}" do %>
-  <%= render "watchlists/action_button", tmdb_id: @watchlist.tmdb_id, media_type: @watchlist.media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: @watchlist %>
-<% end %>
+<%= render "watchlists/action_button_streams", tmdb_id: @watchlist.tmdb_id, media_type: @watchlist.media_type, title: @watchlist.title, poster_path: @watchlist.poster_path, watchlist_item: @watchlist %>
 
 <%= turbo_stream.prepend "flash-messages" do %>
   <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#121217] border border-[rgba(168,85,247,0.3)] text-white shadow-[0_0_20px_rgba(168,85,247,0.2)]" data-controller="removable">

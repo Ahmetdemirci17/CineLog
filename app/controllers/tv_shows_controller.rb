@@ -1,16 +1,17 @@
 class TvShowsController < ApplicationController
   def index
     @active_tab = params[:tab].presence || "popular"
+    page = sanitized_page
     service = TmdbService.new
 
     case @active_tab
     when "trending"
-      response = service.trending_tv(page: params[:page] || 1)
+      response = service.trending_tv(page: page)
     when "top_rated"
-      response = service.top_rated_tv(page: params[:page] || 1)
+      response = service.top_rated_tv(page: page)
     else
       @active_tab = "popular"
-      response = service.popular_tv(page: params[:page] || 1)
+      response = service.popular_tv(page: page)
     end
 
     @items = (response["results"] || []).each { |item| item["media_type"] ||= "tv" }
@@ -22,22 +23,27 @@ class TvShowsController < ApplicationController
       @user_watchlist_map = {}
     end
 
-    # Personalized TV Recommendations
+    # Personalized Mixed High-Rated TV Recommendations
     if user_signed_in?
-      @recommendation_source = current_user.watchlists.watched.where(media_type: "tv").reorder(user_rating: :desc, watched_at: :desc).first
-      if @recommendation_source
-        res = service.tv_recommendations(@recommendation_source.tmdb_id)
-        all_user_ids = current_user.watchlists.where(media_type: "tv").pluck(:tmdb_id).to_set
-        @recommended_items = (res["results"] || []).reject { |m| all_user_ids.include?(m["id"]) }.first(15)
-        @recommended_items.each { |item| item["media_type"] ||= "tv" }
-      else
-        @recommended_items = []
-      end
+      top_tv_ids = @items.map { |t| t["id"].to_i }.to_set
+      rec_data = Watchlist.mixed_recommendations_for(
+        current_user,
+        service: service,
+        media_type: "tv",
+        limit: 15,
+        max_sources: 6,
+        exclude_ids: top_tv_ids
+      )
+      @recommended_items = rec_data[:items]
+      @recommendation_sources = rec_data[:sources]
+      @based_on_high_ratings = rec_data[:based_on_high_ratings]
     else
       @recommended_items = []
+      @recommendation_sources = []
+      @based_on_high_ratings = false
     end
 
-    # Featured TV genre rows for horizontal carousels
+    # Featured TV genre rows for horizontal carousels (zero cross-shelf duplicates)
     featured_tv_genres = [
       { id: 10765, name: "Bilimkurgu & Fantazi" },
       { id: 18, name: "Dram" },
@@ -45,14 +51,12 @@ class TvShowsController < ApplicationController
       { id: 9648, name: "Gizem" },
       { id: 35, name: "Komedi" }
     ]
-    @genre_sections = featured_tv_genres.map do |genre|
-      res = service.discover_tv_by_genre(genre[:id], sort_by: "vote_average.desc")
-      {
-        id: genre[:id],
-        name: genre[:name],
-        items: (res["results"] || []).first(15)
-      }
-    end
+    already_shown_tv_ids = (@items + @recommended_items).map { |t| t["id"].to_i }.to_set
+    @genre_sections = service.build_unique_tv_genre_sections(
+      featured_tv_genres,
+      per_section: 15,
+      exclude_ids: already_shown_tv_ids
+    )
   end
 
   def show

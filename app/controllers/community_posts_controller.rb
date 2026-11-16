@@ -11,11 +11,13 @@ class CommunityPostsController < ApplicationController
     @replies = @community_post.community_replies.includes(:user).chronological
 
     if @community_post.tmdb_id.present?
-      if @community_post.media_type == "tv"
-        @attached_media = TmdbService.new.tv_details(@community_post.tmdb_id)
-      else
-        @attached_media = TmdbService.new.movie_details(@community_post.tmdb_id)
-      end
+      raw_media =
+        if @community_post.media_type == "tv"
+          TmdbService.new.tv_details(@community_post.tmdb_id)
+        else
+          TmdbService.new.movie_details(@community_post.tmdb_id)
+        end
+      @attached_media = raw_media if raw_media.is_a?(Hash) && raw_media["id"].present?
     end
   end
 

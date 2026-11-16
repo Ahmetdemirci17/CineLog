@@ -19,6 +19,10 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def sanitized_page(max: 500)
+    params[:page].to_i.clamp(1, max)
+  end
+
   def prevent_caching_on_auth_pages
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"

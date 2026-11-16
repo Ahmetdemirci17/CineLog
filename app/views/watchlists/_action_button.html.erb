@@ -1,8 +1,10 @@
 <%# locals: (tmdb_id:, media_type:, title:, poster_path:, watchlist_item: nil, compact: false, hero: false) %>
 <%
   poster_url = poster_path.present? ? TmdbService.poster_url(poster_path) : ""
+  dom_id_suffix = hero ? "_hero" : ""
+  scope_class = hero ? "watchlist-action-hero-#{tmdb_id}-#{media_type}" : "watchlist-action-card-#{tmdb_id}-#{media_type}"
 %>
-<div id="watchlist_action_<%= tmdb_id %>_<%= media_type %>" class="watchlist-action-container <%= hero ? 'inline-block' : 'w-full' %>">
+<div id="watchlist_action_<%= tmdb_id %>_<%= media_type %><%= dom_id_suffix %>" class="watchlist-action-container <%= scope_class %> <%= hero ? 'inline-block' : 'w-full' %>">
   <% if !user_signed_in? %>
     <% if hero %>
       <%= link_to new_user_session_path, class: "bg-zinc-900/60 hover:bg-zinc-800/80 text-zinc-200 border border-zinc-700/60 backdrop-blur-md px-5 py-3 rounded-xl font-medium transition-all inline-flex items-center gap-2 text-sm shadow-sm" do %>

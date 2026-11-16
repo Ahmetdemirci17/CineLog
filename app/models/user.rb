@@ -16,22 +16,28 @@ class User < ApplicationRecord
                        length: { minimum: 3, maximum: 30 }
 
   def self.from_omniauth(auth)
+    return new if auth.blank? || auth.provider.blank? || auth.uid.blank?
+
     # 1. Existing user with this provider & uid
     user = find_by(provider: auth.provider, uid: auth.uid)
     return user if user
 
-    # 2. Existing user with matching email -> link Google account
-    user = find_by(email: auth.info.email)
-    if user
-      user.update(provider: auth.provider, uid: auth.uid)
-      return user
+    normalized_email = auth.info&.email.to_s.strip.downcase
+
+    # 2. Existing user with matching email (case-insensitive) -> link Google account
+    if normalized_email.present?
+      user = where("LOWER(email) = ?", normalized_email).first
+      if user
+        user.update(provider: auth.provider, uid: auth.uid)
+        return user
+      end
     end
 
     # 3. Create new user with valid unique username and random password
     create do |u|
       u.provider = auth.provider
       u.uid = auth.uid
-      u.email = auth.info.email
+      u.email = normalized_email.presence || auth.info&.email
       u.password = Devise.friendly_token[0, 20]
       u.username = generate_unique_username(auth)
     end

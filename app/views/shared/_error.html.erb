@@ -1,3 +1,13 @@
-<div class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs mb-3">
-  <%= message %>
-</div>
+<% if local_assigns[:toast] %>
+  <div class="pointer-events-auto flex items-center justify-between p-4 rounded-xl bg-[#15161c] border border-red-500/30 text-white shadow-lg">
+    <div class="flex items-center gap-3">
+      <span class="w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs">!</span>
+      <p class="text-xs sm:text-sm font-medium text-[#f1f3f7]"><%= message %></p>
+    </div>
+    <button type="button" onclick="this.parentElement.remove()" class="text-[#8b90a0] hover:text-white text-xs ml-3 p-1 cursor-pointer">✕</button>
+  </div>
+<% else %>
+  <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs mb-3">
+    <%= message %>
+  </div>
+<% end %>

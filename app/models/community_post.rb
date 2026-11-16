@@ -4,7 +4,14 @@ class CommunityPost < ApplicationRecord
 
   validates :title, presence: true, length: { minimum: 5, maximum: 200 }
   validates :content, presence: true, length: { minimum: 10 }
+  before_validation :normalize_media_type
   validates :media_type, inclusion: { in: %w[movie tv] }, allow_nil: true
+
+  private
+
+  def normalize_media_type
+    self.media_type = media_type.presence
+  end
 
   scope :recent, -> { order(created_at: :desc) }
 end
